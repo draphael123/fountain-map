@@ -117,7 +117,6 @@ interface USMapProps {
 
 export function USMap({ selectedService, onCheckState }: USMapProps) {
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   
@@ -445,120 +444,77 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
         </div>
       </div>
 
-      {/* States Dropdown - Below Description */}
-      <div className="max-w-3xl mx-auto mt-6 px-4">
-        <div className="relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full flex items-center justify-between gap-2 px-5 py-4 bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:border-gray-300 transition-all"
-            style={{ borderColor: isDropdownOpen ? activeColor : undefined }}
-          >
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-lg flex items-center justify-center service-bg-transition"
-                style={{ backgroundColor: `${activeColor}15` }}
-              >
-                <svg className="w-5 h-5 service-color-transition" style={{ color: activeColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
-              </div>
-              <div className="text-left">
-                <span className="font-semibold text-fountain-dark block">View Complete States List</span>
-                <span className="text-sm text-gray-500">
-                  {activeStates.length} available • {inactiveStates.length} coming soon
+      {/* States List - Always Visible for Ctrl+F Search */}
+      <div className="max-w-4xl mx-auto mt-8 px-4">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <h3 className="text-lg font-bold text-fountain-dark">Complete States List</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Use Ctrl+F (Cmd+F on Mac) to quickly find your state • {activeStates.length} available • {inactiveStates.length} coming soon
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-0">
+            {/* Available States */}
+            <div className="p-4 md:border-r border-gray-100">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+                <span 
+                  className="w-3 h-3 rounded-full service-bg-transition"
+                  style={{ backgroundColor: activeColor }}
+                />
+                <span className="font-bold text-sm service-color-transition" style={{ color: activeColor }}>
+                  Available States ({activeStates.length})
                 </span>
               </div>
-            </div>
-            <svg 
-              className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          {/* Dropdown Content */}
-          {isDropdownOpen && (
-            <div className="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-96 overflow-y-auto">
-              {/* Available States */}
-              <div 
-                className="p-4 border-b border-gray-100 sticky top-0 bg-white z-10"
-                style={{ backgroundColor: `${activeColor}08` }}
-              >
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="w-3 h-3 rounded-full service-bg-transition"
-                    style={{ backgroundColor: activeColor }}
-                  />
-                  <span className="font-bold text-sm service-color-transition" style={{ color: activeColor }}>
-                    Available States ({activeStates.length})
-                  </span>
-                </div>
-              </div>
-              <div className="p-2">
+              <div className="space-y-1">
                 {activeStates.map(state => (
-                  <button 
+                  <div 
                     key={state.id}
-                    onClick={() => {
-                      onCheckState(state.id);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => onCheckState(state.id)}
                   >
                     <span className="text-sm font-medium text-gray-700">{state.name}</span>
                     <span 
-                      className="text-xs font-bold px-2.5 py-1 rounded-md"
+                      className="text-xs font-bold px-2 py-0.5 rounded"
                       style={{ backgroundColor: `${activeColor}15`, color: activeColor }}
                     >
                       {state.id}
                     </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Coming Soon States */}
-              <div className="p-4 border-b border-t border-gray-100 sticky top-0 bg-gray-50 z-10">
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: inactiveColor }}
-                  />
-                  <span className="font-bold text-sm text-gray-500">
-                    Coming Soon ({inactiveStates.length})
-                  </span>
-                </div>
-              </div>
-              <div className="p-2">
-                {inactiveStates.map(state => (
-                  <button 
-                    key={state.id}
-                    onClick={() => {
-                      onCheckState(state.id);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <span className="text-sm text-gray-500">{state.name}</span>
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-gray-100 text-gray-500">
-                      {state.id}
-                    </span>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
-          )}
+
+            {/* Coming Soon States */}
+            <div className="p-4 bg-gray-50/50">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
+                <span 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: inactiveColor }}
+                />
+                <span className="font-bold text-sm text-gray-500">
+                  Coming Soon ({inactiveStates.length})
+                </span>
+              </div>
+              <div className="space-y-1">
+                {inactiveStates.map(state => (
+                  <div 
+                    key={state.id}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                    onClick={() => onCheckState(state.id)}
+                  >
+                    <span className="text-sm text-gray-500">{state.name}</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 text-gray-500">
+                      {state.id}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Click outside to close dropdown */}
-      {isDropdownOpen && (
-        <div 
-          className="fixed inset-0 z-30" 
-          onClick={() => setIsDropdownOpen(false)}
-        />
-      )}
 
       {/* Tooltip */}
       {tooltip && (
