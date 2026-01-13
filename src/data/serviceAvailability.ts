@@ -88,24 +88,33 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
 };
 
 // Service metadata
-export const SERVICE_INFO: Record<ServiceType, { name: string; fullName: string; color: string; description: string }> = {
+export const SERVICE_INFO: Record<ServiceType, { 
+  name: string; 
+  fullName: string; 
+  color: string; 
+  shortDescription: string;
+  longDescription: string;
+}> = {
   TRT: {
     name: 'TRT',
     fullName: 'Testosterone Replacement Therapy',
     color: '#2DD4BF',
-    description: 'Hormone optimization for men',
+    shortDescription: 'Hormone optimization for men',
+    longDescription: 'FountainTRT provides personalized testosterone replacement therapy for men experiencing low testosterone levels. Our licensed providers create customized treatment plans to help restore energy, improve mood, increase muscle mass, and enhance overall vitality. Treatment includes regular monitoring and adjustments to ensure optimal results.',
   },
   HRT: {
     name: 'HRT',
     fullName: 'Hormone Replacement Therapy',
     color: '#EC4899',
-    description: 'Hormone balance for women',
+    shortDescription: 'Hormone balance for women',
+    longDescription: 'FountainHRT offers comprehensive hormone replacement therapy designed specifically for women. Whether you\'re experiencing perimenopause, menopause, or hormonal imbalances, our expert providers develop personalized treatment plans to help alleviate symptoms, restore hormonal balance, and improve your quality of life.',
   },
   GLP: {
     name: 'GLP',
     fullName: 'GLP-1 Weight Loss',
     color: '#7C6F9B',
-    description: 'Medical weight management',
+    shortDescription: 'Medical weight management',
+    longDescription: 'FountainGLP provides medically supervised weight loss programs using GLP-1 receptor agonist medications. These FDA-approved treatments help regulate appetite, improve blood sugar control, and support sustainable weight loss. Our providers work with you to create a comprehensive plan that includes medication management and ongoing support.',
   },
 };
 

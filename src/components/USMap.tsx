@@ -176,106 +176,12 @@ export function USMap({ selectedService }: USMapProps) {
           <span>Active States</span>
         </h2>
         <p className="text-gray-600 mt-2 text-sm sm:text-base">
-          {serviceInfo.fullName} • {serviceInfo.description}
+          {serviceInfo.fullName} • {serviceInfo.shortDescription}
         </p>
         <p className="text-gray-500 mt-1 text-sm">
           Available in <span className="font-semibold" style={{ color: activeColor }}>{activeStateCount}</span> states
         </p>
       </div>
-
-      {/* States Dropdown */}
-      <div className="flex justify-center mb-6 px-4">
-        <div className="relative w-full max-w-sm">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:border-gray-300 transition-colors"
-            style={{ borderColor: isDropdownOpen ? activeColor : undefined }}
-          >
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              <span className="font-medium text-fountain-dark">View States List</span>
-            </div>
-            <svg 
-              className={`w-5 h-5 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          {/* Dropdown Content */}
-          {isDropdownOpen && (
-            <div className="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-80 overflow-y-auto">
-              {/* Available States */}
-              <div className="p-3 border-b border-gray-100 sticky top-0 bg-white">
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: activeColor }}
-                  />
-                  <span className="font-semibold text-sm text-fountain-dark">
-                    Available ({activeStates.length})
-                  </span>
-                </div>
-              </div>
-              <div className="p-2">
-                {activeStates.map(state => (
-                  <div 
-                    key={state.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50"
-                  >
-                    <span className="text-sm text-gray-700">{state.name}</span>
-                    <span 
-                      className="text-xs font-bold px-2 py-0.5 rounded"
-                      style={{ backgroundColor: `${activeColor}20`, color: activeColor }}
-                    >
-                      {state.id}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Coming Soon States */}
-              <div className="p-3 border-b border-t border-gray-100 sticky top-0 bg-white">
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: inactiveColor }}
-                  />
-                  <span className="font-semibold text-sm text-gray-500">
-                    Coming Soon ({inactiveStates.length})
-                  </span>
-                </div>
-              </div>
-              <div className="p-2">
-                {inactiveStates.map(state => (
-                  <div 
-                    key={state.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50"
-                  >
-                    <span className="text-sm text-gray-500">{state.name}</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500">
-                      {state.id}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Click outside to close dropdown */}
-      {isDropdownOpen && (
-        <div 
-          className="fixed inset-0 z-30" 
-          onClick={() => setIsDropdownOpen(false)}
-        />
-      )}
 
       {/* Map container */}
       <div className="w-full max-w-5xl mx-auto px-2 sm:px-4">
@@ -407,6 +313,145 @@ export function USMap({ selectedService }: USMapProps) {
           <span className="text-sm text-gray-700">Coming Soon</span>
         </div>
       </div>
+
+      {/* Service Description Section */}
+      <div className="max-w-3xl mx-auto mt-8 sm:mt-12 px-4">
+        <div 
+          className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm"
+          style={{ borderColor: `${activeColor}30` }}
+        >
+          <div className="flex items-start gap-4">
+            <div 
+              className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: `${activeColor}15` }}
+            >
+              <svg 
+                className="w-6 h-6" 
+                fill="none" 
+                stroke={activeColor} 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg sm:text-xl font-bold text-fountain-dark mb-2">
+                About Fountain<span style={{ color: activeColor }}>{serviceInfo.name}</span>
+              </h3>
+              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                {serviceInfo.longDescription}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* States Dropdown - Below Description */}
+      <div className="max-w-3xl mx-auto mt-6 px-4">
+        <div className="relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full flex items-center justify-between gap-2 px-5 py-4 bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:border-gray-300 transition-all"
+            style={{ borderColor: isDropdownOpen ? activeColor : undefined }}
+          >
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: `${activeColor}15` }}
+              >
+                <svg className="w-5 h-5" style={{ color: activeColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <span className="font-semibold text-fountain-dark block">View Complete States List</span>
+                <span className="text-sm text-gray-500">
+                  {activeStates.length} available • {inactiveStates.length} coming soon
+                </span>
+              </div>
+            </div>
+            <svg 
+              className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Dropdown Content */}
+          {isDropdownOpen && (
+            <div className="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-96 overflow-y-auto">
+              {/* Available States */}
+              <div 
+                className="p-4 border-b border-gray-100 sticky top-0 bg-white z-10"
+                style={{ backgroundColor: `${activeColor}08` }}
+              >
+                <div className="flex items-center gap-2">
+                  <span 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: activeColor }}
+                  />
+                  <span className="font-bold text-sm" style={{ color: activeColor }}>
+                    Available States ({activeStates.length})
+                  </span>
+                </div>
+              </div>
+              <div className="p-2">
+                {activeStates.map(state => (
+                  <div 
+                    key={state.id}
+                    className="flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="text-sm font-medium text-gray-700">{state.name}</span>
+                    <span 
+                      className="text-xs font-bold px-2.5 py-1 rounded-md"
+                      style={{ backgroundColor: `${activeColor}15`, color: activeColor }}
+                    >
+                      {state.id}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Coming Soon States */}
+              <div className="p-4 border-b border-t border-gray-100 sticky top-0 bg-gray-50 z-10">
+                <div className="flex items-center gap-2">
+                  <span 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: inactiveColor }}
+                  />
+                  <span className="font-bold text-sm text-gray-500">
+                    Coming Soon ({inactiveStates.length})
+                  </span>
+                </div>
+              </div>
+              <div className="p-2">
+                {inactiveStates.map(state => (
+                  <div 
+                    key={state.id}
+                    className="flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="text-sm text-gray-500">{state.name}</span>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-gray-100 text-gray-500">
+                      {state.id}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Click outside to close dropdown */}
+      {isDropdownOpen && (
+        <div 
+          className="fixed inset-0 z-30" 
+          onClick={() => setIsDropdownOpen(false)}
+        />
+      )}
 
       {/* Tooltip */}
       {tooltip && (
