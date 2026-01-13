@@ -1,4 +1,3 @@
-import { FountainIcon } from './FountainIcon';
 import { SERVICE_INFO, ServiceType } from '../data/serviceAvailability';
 
 export function Footer() {
@@ -10,10 +9,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
           <div className="text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
-              <FountainIcon color="#ffffff" size={28} />
-              <span className="text-xl font-semibold">
-                Fountain<span className="text-fountain-trt">Vitality</span>
+            <div className="flex items-center justify-center md:justify-start gap-1 mb-4">
+              <img 
+                src="/fountain-logo.png" 
+                alt="Fountain" 
+                className="h-7 w-auto brightness-0 invert"
+              />
+              <span className="text-xl font-semibold text-fountain-trt">
+                Vitality
               </span>
             </div>
             <p className="text-gray-400 text-sm">
@@ -68,4 +71,3 @@ export function Footer() {
     </footer>
   );
 }
-

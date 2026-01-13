@@ -1,4 +1,3 @@
-import { FountainIcon } from './FountainIcon';
 import { ServiceType, SERVICE_INFO } from '../data/serviceAvailability';
 
 interface HeaderProps {
@@ -14,10 +13,14 @@ export function Header({ selectedService, onServiceChange }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top branding bar */}
         <div className="py-4 border-b border-white/10">
-          <div className="flex items-center justify-center gap-2">
-            <FountainIcon color="#ffffff" size={32} />
-            <span className="text-2xl font-semibold tracking-tight">
-              Fountain<span className="text-fountain-trt">Vitality</span>
+          <div className="flex items-center justify-center gap-1">
+            <img 
+              src="/fountain-logo.png" 
+              alt="Fountain" 
+              className="h-8 sm:h-10 w-auto brightness-0 invert"
+            />
+            <span className="text-2xl font-semibold tracking-tight text-fountain-trt">
+              Vitality
             </span>
           </div>
         </div>
@@ -49,17 +52,18 @@ export function Header({ selectedService, onServiceChange }: HeaderProps) {
                       boxShadow: isSelected ? `0 4px 20px ${info.color}40` : undefined,
                     }}
                   >
-                    <FountainIcon 
-                      color={isSelected ? info.color : '#ffffff'} 
-                      size={20} 
+                    <img 
+                      src="/fountain-logo.png" 
+                      alt="" 
+                      className={`h-5 w-auto ${isSelected ? '' : 'brightness-0 invert'}`}
+                      style={isSelected ? { filter: `brightness(0) saturate(100%)` } : undefined}
                     />
                     <span className={`
                       font-semibold text-sm sm:text-base tracking-wide
                       ${isSelected ? 'text-fountain-dark' : 'text-white'}
                     `}>
-                      Fountain
                       <span 
-                        style={{ color: isSelected ? info.color : info.color }}
+                        style={{ color: info.color }}
                         className="font-bold"
                       >
                         {info.name}
@@ -75,4 +79,3 @@ export function Header({ selectedService, onServiceChange }: HeaderProps) {
     </header>
   );
 }
-
