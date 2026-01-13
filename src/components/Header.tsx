@@ -20,15 +20,12 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
         <div className="py-4 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex-1" />
-            <div className="flex items-center justify-center gap-1">
+            <div className="flex items-center justify-center">
               <img 
                 src="/fountain-logo.png" 
-                alt="Fountain" 
+                alt="Fountain Vitality" 
                 className="h-8 sm:h-10 w-auto"
               />
-              <span className="text-2xl font-semibold tracking-tight text-fountain-trt">
-                Vitality
-              </span>
             </div>
             <div className="flex-1 flex justify-end">
               <ThemeToggle />
