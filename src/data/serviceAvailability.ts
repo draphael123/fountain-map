@@ -66,7 +66,7 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   TRT: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
     'ND', 'MN', 'IA', 'WI', 'MI', 'IL', 'IN', 'OH',
-    'OK', 'AR', 'TX', 'LA', 'TN', 'FL', 'NC', 'SC',
+    'OK', 'AR', 'TX', 'LA', 'TN', 'FL', 'GA', 'NC', 'SC',
     'VA', 'MD', 'DE', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
   
