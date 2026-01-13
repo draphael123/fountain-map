@@ -13,7 +13,7 @@ export function Footer() {
             <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
               <FountainIcon color="#ffffff" size={28} />
               <span className="text-xl font-semibold">
-                Fountain<span className="text-fountain-trt">Health</span>
+                Fountain<span className="text-fountain-trt">Vitality</span>
               </span>
             </div>
             <p className="text-gray-400 text-sm">
@@ -60,7 +60,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-8 pt-8 border-t border-white/10 text-center">
           <p className="text-gray-500 text-xs">
-            © {new Date().getFullYear()} Fountain Health. All rights reserved. 
+            © {new Date().getFullYear()} Fountain Vitality. All rights reserved. 
             Service availability subject to state regulations.
           </p>
         </div>

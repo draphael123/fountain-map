@@ -17,7 +17,7 @@ export function Header({ selectedService, onServiceChange }: HeaderProps) {
           <div className="flex items-center justify-center gap-2">
             <FountainIcon color="#ffffff" size={32} />
             <span className="text-2xl font-semibold tracking-tight">
-              Fountain<span className="text-fountain-trt">Health</span>
+              Fountain<span className="text-fountain-trt">Vitality</span>
             </span>
           </div>
         </div>
