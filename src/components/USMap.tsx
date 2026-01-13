@@ -188,15 +188,15 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
     <div className="relative w-full">
       {/* Map title */}
       <div className="text-center mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-fountain-dark flex items-center justify-center gap-2 flex-wrap">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-fountain-dark dark:text-white flex items-center justify-center gap-2 flex-wrap">
           <span>Fountain</span>
           <span className="service-color-transition" style={{ color: activeColor }}>{serviceInfo.name}</span>
           <span>Active States</span>
         </h2>
-        <p className="text-gray-600 mt-2 text-sm sm:text-base">
+        <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
           {serviceInfo.fullName} • {serviceInfo.shortDescription}
         </p>
-        <p className="text-gray-500 mt-1 text-sm">
+        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
           Available in <span className="font-semibold service-color-transition" style={{ color: activeColor }}>{activeStateCount}</span> states
         </p>
       </div>
@@ -220,12 +220,12 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-fountain-trt focus:outline-none transition-colors"
+            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-fountain-dark dark:text-white focus:border-fountain-trt focus:outline-none transition-colors"
           />
           
           {/* Search Results Dropdown */}
           {isSearchFocused && filteredSearchStates.length > 0 && (
-            <div className="absolute z-40 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+            <div className="absolute z-40 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
               {filteredSearchStates.map(state => {
                 const available = isServiceAvailable(state.id, selectedService);
                 const allServices = getServicesForState(state.id);
@@ -236,10 +236,10 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                       onCheckState(state.id);
                       setSearchQuery('');
                     }}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
                   >
                     <div>
-                      <span className="font-medium text-fountain-dark">{state.name}</span>
+                      <span className="font-medium text-fountain-dark dark:text-white">{state.name}</span>
                       <span className="text-gray-400 ml-2">({state.id})</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -401,21 +401,21 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             className="w-5 h-5 rounded shadow-sm service-bg-transition"
             style={{ backgroundColor: activeColor }}
           />
-          <span className="text-sm text-gray-700">Service Available</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">Service Available</span>
         </div>
         <div className="flex items-center gap-2">
           <div 
             className="w-5 h-5 rounded shadow-sm"
             style={{ backgroundColor: inactiveColor }}
           />
-          <span className="text-sm text-gray-700">Coming Soon</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">Coming Soon</span>
         </div>
       </div>
 
       {/* Service Description Section */}
       <div className="max-w-3xl mx-auto mt-8 sm:mt-12 px-4">
         <div 
-          className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm service-border-transition"
+          className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 sm:p-8 shadow-sm service-border-transition"
           style={{ borderColor: `${activeColor}30` }}
         >
           <div className="flex items-start gap-4">
@@ -433,10 +433,10 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg sm:text-xl font-bold text-fountain-dark mb-2">
+              <h3 className="text-lg sm:text-xl font-bold text-fountain-dark dark:text-white mb-2">
                 About Fountain<span className="service-color-transition" style={{ color: activeColor }}>{serviceInfo.name}</span>
               </h3>
-              <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm sm:text-base">
                 {serviceInfo.longDescription}
               </p>
             </div>
@@ -446,19 +446,19 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
 
       {/* States List - Always Visible for Ctrl+F Search */}
       <div className="max-w-4xl mx-auto mt-8 px-4">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-            <h3 className="text-lg font-bold text-fountain-dark">Complete States List</h3>
-            <p className="text-sm text-gray-500 mt-1">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <h3 className="text-lg font-bold text-fountain-dark dark:text-white">Complete States List</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Use Ctrl+F (Cmd+F on Mac) to quickly find your state • {activeStates.length} available • {inactiveStates.length} coming soon
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-0">
             {/* Available States */}
-            <div className="p-4 md:border-r border-gray-100">
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+            <div className="p-4 md:border-r border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
                 <span 
                   className="w-3 h-3 rounded-full service-bg-transition"
                   style={{ backgroundColor: activeColor }}
@@ -471,10 +471,10 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                 {activeStates.map(state => (
                   <div 
                     key={state.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                     onClick={() => onCheckState(state.id)}
                   >
-                    <span className="text-sm font-medium text-gray-700">{state.name}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{state.name}</span>
                     <span 
                       className="text-xs font-bold px-2 py-0.5 rounded"
                       style={{ backgroundColor: `${activeColor}15`, color: activeColor }}
@@ -487,8 +487,8 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             </div>
 
             {/* Coming Soon States */}
-            <div className="p-4 bg-gray-50/50">
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
+            <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                 <span 
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: inactiveColor }}
@@ -501,11 +501,11 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                 {inactiveStates.map(state => (
                   <div 
                     key={state.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                     onClick={() => onCheckState(state.id)}
                   >
-                    <span className="text-sm text-gray-500">{state.name}</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{state.name}</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
                       {state.id}
                     </span>
                   </div>
