@@ -48,13 +48,13 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
   const stateServices = useMemo(() => {
     if (!selectedState) return null;
     const stateName = US_STATES.find(s => s.id === selectedState)?.name || selectedState;
-    const services = (['TRT', 'HRT', 'GLP'] as ServiceType[]).map(service => ({
+    const services = (['TRT', 'HRT', 'GLP', 'Planning'] as ServiceType[]).map(service => ({
       service,
       info: SERVICE_INFO[service],
       available: isServiceAvailable(selectedState, service),
     }));
     const availableCount = services.filter(s => s.available).length;
-    return { stateName, services, availableCount };
+    return { stateName, services, availableCount, totalServices: services.length };
   }, [selectedState]);
 
   // Generate shareable link
@@ -171,7 +171,7 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
                 </button>
                 <h3 className="text-2xl font-bold text-fountain-dark">{stateServices.stateName}</h3>
                 <p className="text-gray-500 mt-1">
-                  {stateServices.availableCount} of 3 services available
+                  {stateServices.availableCount} of {stateServices.totalServices} services available
                 </p>
               </div>
 
