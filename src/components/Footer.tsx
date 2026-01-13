@@ -13,7 +13,7 @@ export function Footer() {
               <img 
                 src="/fountain-logo.png" 
                 alt="Fountain" 
-                className="h-7 w-auto brightness-0 invert"
+                className="h-7 w-auto"
               />
               <span className="text-xl font-semibold text-fountain-trt">
                 Vitality

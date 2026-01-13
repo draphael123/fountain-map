@@ -24,7 +24,7 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
               <img 
                 src="/fountain-logo.png" 
                 alt="Fountain" 
-                className="h-8 sm:h-10 w-auto brightness-0 invert"
+                className="h-8 sm:h-10 w-auto"
               />
               <span className="text-2xl font-semibold tracking-tight text-fountain-trt">
                 Vitality
