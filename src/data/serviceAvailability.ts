@@ -73,8 +73,8 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainHRT - Hormone Replacement Therapy (Pink states)
   HRT: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'WI', 'MI', 'IL', 'IN', 'OH', 'KY', 'TN',
-    'TX', 'OK', 'LA', 'AL', 'FL', 'GA', 'SC', 'NC', 'VA', 'DC',
+    'ND', 'MN', 'WI', 'MI', 'IL', 'IN', 'OH', 'KY',
+    'TX', 'OK', 'LA', 'FL', 'NC', 'VA', 'DC',
     'MD', 'DE', 'NJ', 'PA', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
   
