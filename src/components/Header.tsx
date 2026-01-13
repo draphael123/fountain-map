@@ -6,7 +6,7 @@ interface HeaderProps {
 }
 
 export function Header({ selectedService, onServiceChange }: HeaderProps) {
-  const services: ServiceType[] = ['TRT', 'HRT', 'GLP'];
+  const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Planning'];
 
   return (
     <header className="bg-fountain-dark text-white">

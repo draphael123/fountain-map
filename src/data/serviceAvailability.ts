@@ -1,4 +1,4 @@
-export type ServiceType = 'TRT' | 'HRT' | 'GLP';
+export type ServiceType = 'TRT' | 'HRT' | 'GLP' | 'Planning';
 
 export interface StateInfo {
   id: string;
@@ -85,6 +85,11 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
     'KY', 'TN', 'VA', 'NC', 'PA', 'NY', 'ME', 'VT', 'NH', 'RI',
     'NJ', 'DE', 'MD', 'DC', 'TX', 'LA', 'AR', 'FL'
   ],
+
+  // Fountain State Planning (Blue states)
+  Planning: [
+    'ND', 'SD', 'WY', 'NV', 'MO', 'AR', 'MS', 'WV', 'HI', 'MA'
+  ],
 };
 
 // Service metadata
@@ -116,6 +121,13 @@ export const SERVICE_INFO: Record<ServiceType, {
     shortDescription: 'Medical weight management',
     longDescription: 'FountainGLP provides medically supervised weight loss programs using GLP-1 receptor agonist medications. These FDA-approved treatments help regulate appetite, improve blood sugar control, and support sustainable weight loss. Our providers work with you to create a comprehensive plan that includes medication management and ongoing support.',
   },
+  Planning: {
+    name: 'State Planning',
+    fullName: 'State Planning Services',
+    color: '#3B82F6',
+    shortDescription: 'Comprehensive state planning',
+    longDescription: 'Fountain State Planning offers comprehensive planning services to help you navigate complex decisions. Our expert team provides personalized guidance and support to help you plan for the future, ensuring you have the resources and strategies in place to achieve your goals.',
+  },
 };
 
 // Helper function to check if a state has a service
@@ -135,4 +147,3 @@ export function getStateName(stateId: string): string {
   const state = US_STATES.find(s => s.id === stateId);
   return state?.name ?? stateId;
 }
-

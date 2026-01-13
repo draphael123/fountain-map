@@ -1,7 +1,7 @@
 import { SERVICE_INFO, ServiceType } from '../data/serviceAvailability';
 
 export function Footer() {
-  const services: ServiceType[] = ['TRT', 'HRT', 'GLP'];
+  const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Planning'];
 
   return (
     <footer className="bg-fountain-dark text-white mt-auto">
