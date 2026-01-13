@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { 
   US_STATES, 
-  SERVICE_INFO, 
   ServiceType,
   getServicesForState,
 } from '../data/serviceAvailability';
@@ -13,7 +12,6 @@ interface MobileStateSelectorProps {
 
 export function MobileStateSelector({ selectedService, onSelectState }: MobileStateSelectorProps) {
   const [selectedState, setSelectedState] = useState('');
-  const serviceInfo = SERVICE_INFO[selectedService];
 
   const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const stateId = e.target.value;
@@ -32,10 +30,7 @@ export function MobileStateSelector({ selectedService, onSelectState }: MobileSt
         <select
           value={selectedState}
           onChange={handleStateChange}
-          className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-fountain-dark dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2"
-          style={{ 
-            focusRing: serviceInfo.color,
-          }}
+          className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-fountain-dark dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-fountain-trt"
         >
           <option value="">Choose a state...</option>
           {US_STATES.sort((a, b) => a.name.localeCompare(b.name)).map(state => {
