@@ -65,31 +65,30 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
   TRT: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'WI', 'MI', 'IA', 'IL', 'IN', 'OH', 'KS', 'MO',
-    'OK', 'AR', 'TX', 'LA', 'KY', 'TN', 'FL', 'GA', 'NC', 'SC',
-    'VA', 'WV', 'MD', 'DE', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA',
-    'VT', 'NH', 'ME'
+    'ND', 'MN', 'IA', 'WI', 'MI', 'IL', 'IN', 'OH',
+    'OK', 'AR', 'TX', 'LA', 'TN', 'FL', 'NC', 'SC',
+    'VA', 'MD', 'DE', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
   
   // FountainHRT - Hormone Replacement Therapy (Pink states)
   HRT: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'WI', 'MI', 'IL', 'IN', 'OH', 'KY',
-    'TX', 'OK', 'LA', 'FL', 'NC', 'VA', 'DC',
-    'MD', 'DE', 'NJ', 'PA', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
+    'ND', 'MN', 'IA', 'WI', 'MI', 'IL', 'IN', 'OH',
+    'OK', 'TX', 'LA', 'KY', 'FL', 'NC', 'SC',
+    'VA', 'MD', 'DE', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
   
   // FountainGLP - GLP-1 Weight Loss (Purple states)
   GLP: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'WI', 'MI', 'IA', 'MO', 'IL', 'IN', 'OH', 'KY',
-    'TN', 'OK', 'AR', 'TX', 'LA', 'FL', 'NC', 'SC', 'VA', 'WV',
+    'ND', 'MN', 'IA', 'WI', 'MI', 'IL', 'IN', 'OH', 'KY',
+    'TX', 'LA', 'FL', 'NC', 'SC', 'VA', 'WV',
     'MD', 'DE', 'DC', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
 
   // Fountain State Planning (Blue states)
   Planning: [
-    'ND', 'SD', 'WY', 'NV', 'MO', 'AR', 'MS', 'WV', 'HI', 'MA', 'RI'
+    'ND', 'SD', 'WY', 'NV', 'MO', 'AR', 'MS', 'WV', 'HI'
   ],
 };
 
