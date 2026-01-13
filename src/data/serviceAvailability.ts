@@ -73,9 +73,9 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainHRT - Hormone Replacement Therapy (Pink states)
   HRT: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'WI', 'MI', 'NY', 'PA', 'OH', 'IN', 'IL', 'IA',
-    'OK', 'TX', 'LA', 'MS', 'AL', 'FL', 'GA', 'SC', 'NC', 'VA',
-    'MD', 'DE', 'NJ', 'RI', 'ME', 'MO', 'AR', 'TN', 'KS'
+    'ND', 'MN', 'WI', 'MI', 'IL', 'IN', 'OH', 'KY', 'TN',
+    'TX', 'OK', 'LA', 'AL', 'FL', 'GA', 'SC', 'NC', 'VA', 'DC',
+    'MD', 'DE', 'NJ', 'PA', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
   
   // FountainGLP - GLP-1 Weight Loss (Purple states)
