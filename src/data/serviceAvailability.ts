@@ -83,8 +83,8 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   GLP: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
     'ND', 'MN', 'WI', 'MI', 'IA', 'MO', 'IL', 'IN', 'OH', 'KY',
-    'AR', 'TX', 'LA', 'FL', 'NC', 'VA', 'MD', 'DE', 'DC', 'PA',
-    'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
+    'TN', 'OK', 'AR', 'TX', 'LA', 'FL', 'NC', 'SC', 'VA', 'WV',
+    'MD', 'DE', 'DC', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
 
   // Fountain State Planning (Blue states)
