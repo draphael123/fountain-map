@@ -65,9 +65,9 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
   TRT: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'WI', 'MI', 'IA', 'MO', 'IL', 'IN', 'OH', 'KY',
-    'TN', 'KS', 'OK', 'AR', 'TX', 'LA', 'FL', 'NC', 'SC',
-    'VA', 'WV', 'PA', 'NJ', 'NY', 'VT', 'NH', 'ME'
+    'ND', 'MN', 'WI', 'MI', 'IA', 'IL', 'IN', 'OH',
+    'TX', 'LA', 'FL', 'NC', 'SC', 'VA',
+    'MD', 'DE', 'DC', 'PA', 'NJ', 'NY', 'VT', 'NH', 'ME'
   ],
   
   // FountainHRT - Hormone Replacement Therapy (Pink states)
