@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 declare module 'react-simple-maps' {
-  import { ReactNode, ComponentType, SVGProps } from 'react';
+  import { ReactNode, ComponentType, CSSProperties } from 'react';
 
   export interface ComposableMapProps {
     projection?: string;
@@ -17,10 +17,10 @@ declare module 'react-simple-maps' {
 
   export interface GeographiesProps {
     geography: string | object;
-    children: (props: { geographies: Geography[] }) => ReactNode;
+    children: (props: { geographies: GeographyObject[] }) => ReactNode;
   }
 
-  export interface Geography {
+  export interface GeographyObject {
     rsmKey: string;
     properties: {
       name: string;
@@ -29,8 +29,22 @@ declare module 'react-simple-maps' {
     id: string;
   }
 
-  export interface GeographyProps extends SVGProps<SVGPathElement> {
-    geography: Geography;
+  export interface GeographyStyleProps {
+    default?: CSSProperties;
+    hover?: CSSProperties;
+    pressed?: CSSProperties;
+  }
+
+  export interface GeographyProps {
+    geography: GeographyObject;
+    fill?: string;
+    stroke?: string;
+    strokeWidth?: number;
+    style?: GeographyStyleProps;
+    onMouseEnter?: (event: React.MouseEvent<SVGPathElement>) => void;
+    onMouseLeave?: (event: React.MouseEvent<SVGPathElement>) => void;
+    onMouseMove?: (event: React.MouseEvent<SVGPathElement>) => void;
+    onClick?: (event: React.MouseEvent<SVGPathElement>) => void;
   }
 
   export interface ZoomableGroupProps {

@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   ComposableMap,
   Geographies,
   Geography,
+  GeographyObject,
 } from 'react-simple-maps';
 import { 
   ServiceType, 
@@ -48,32 +49,29 @@ export function USMap({ selectedService }: USMapProps) {
   const activeColor = serviceInfo.color;
   const inactiveColor = '#D1D5DB';
 
-  const handleMouseEnter = (
-    geo: { id: string; properties: { name: string } },
-    event: React.MouseEvent
-  ) => {
-    const stateId = FIPS_TO_STATE[geo.id] || geo.id;
-    const stateName = getStateName(stateId);
-    const isAvailable = isServiceAvailable(stateId, selectedService);
-    
-    setTooltip({
-      x: event.clientX,
-      y: event.clientY,
-      stateId,
-      stateName,
-      isAvailable,
-    });
-  };
+  const createMouseEnterHandler = useCallback((geo: GeographyObject) => {
+    return (event: React.MouseEvent<SVGPathElement>) => {
+      const stateId = FIPS_TO_STATE[geo.id] || geo.id;
+      const stateName = getStateName(stateId);
+      const available = isServiceAvailable(stateId, selectedService);
+      
+      setTooltip({
+        x: event.clientX,
+        y: event.clientY,
+        stateId,
+        stateName,
+        isAvailable: available,
+      });
+    };
+  }, [selectedService]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setTooltip(null);
-  };
+  }, []);
 
-  const handleMouseMove = (event: React.MouseEvent) => {
-    if (tooltip) {
-      setTooltip(prev => prev ? { ...prev, x: event.clientX, y: event.clientY } : null);
-    }
-  };
+  const handleMouseMove = useCallback((event: React.MouseEvent<SVGPathElement>) => {
+    setTooltip(prev => prev ? { ...prev, x: event.clientX, y: event.clientY } : null);
+  }, []);
 
   // Count active states
   const activeStateCount = useMemo(() => {
@@ -137,7 +135,7 @@ export function USMap({ selectedService }: USMapProps) {
                         outline: 'none',
                       },
                     }}
-                    onMouseEnter={(e) => handleMouseEnter(geo, e)}
+                    onMouseEnter={createMouseEnterHandler(geo)}
                     onMouseLeave={handleMouseLeave}
                     onMouseMove={handleMouseMove}
                   />
