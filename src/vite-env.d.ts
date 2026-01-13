@@ -55,17 +55,28 @@ declare module 'react-simple-maps' {
     children?: ReactNode;
   }
 
+  export interface MarkerProps {
+    coordinates: [number, number];
+    children?: ReactNode;
+  }
+
   export interface AnnotationProps {
     subject: [number, number];
     dx?: number;
     dy?: number;
     children?: ReactNode;
+    connectorProps?: {
+      stroke?: string;
+      strokeWidth?: number;
+      strokeLinecap?: string;
+    };
   }
 
   export const ComposableMap: ComponentType<ComposableMapProps>;
   export const Geographies: ComponentType<GeographiesProps>;
   export const Geography: ComponentType<GeographyProps>;
   export const ZoomableGroup: ComponentType<ZoomableGroupProps>;
+  export const Marker: ComponentType<MarkerProps>;
   export const Annotation: ComponentType<AnnotationProps>;
 }
 
