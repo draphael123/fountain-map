@@ -81,9 +81,9 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainGLP - GLP-1 Weight Loss (Purple states)
   GLP: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'NE', 'MN', 'IA', 'MO', 'WI', 'IL', 'IN', 'MI', 'OH',
-    'KY', 'TN', 'VA', 'NC', 'PA', 'NY', 'ME', 'VT', 'NH', 'RI',
-    'NJ', 'DE', 'MD', 'DC', 'TX', 'LA', 'AR', 'FL'
+    'ND', 'MN', 'WI', 'MI', 'IA', 'MO', 'IL', 'IN', 'OH', 'KY',
+    'AR', 'TX', 'LA', 'FL', 'NC', 'VA', 'MD', 'DE', 'DC', 'PA',
+    'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
   ],
 
   // Fountain State Planning (Blue states)
