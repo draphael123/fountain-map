@@ -60,35 +60,36 @@ export const US_STATES: StateInfo[] = [
   { id: 'DC', name: 'District of Columbia' },
 ];
 
-// Service availability data extracted from the source maps
+// Service availability data extracted from the source spreadsheet
 export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
+  // Active: 29 states | Pending: WY, SD, KS, OK, MO, AR, LA, MS, KY, TN, AL, GA, SC, WV, DE, CT, RI, MA, NH, DC, AK, HI
   TRT: [
-    'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'IA', 'WI', 'MI', 'IL', 'IN', 'OH',
-    'OK', 'AR', 'TX', 'LA', 'TN', 'FL', 'GA', 'NC', 'SC',
-    'VA', 'MD', 'DE', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
+    'WA', 'OR', 'CA', 'MT', 'ID', 'NV', 'UT', 'AZ', 'ND', 'CO',
+    'NM', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'MI', 'OH',
+    'PA', 'NY', 'VT', 'ME', 'NJ', 'MD', 'VA', 'NC', 'FL'
   ],
   
   // FountainHRT - Hormone Replacement Therapy (Pink states)
+  // Active: 29 states | Pending: WY, SD, KS, OK, MO, AR, LA, MS, TN, KY, AL, GA, SC, WV, DE, DC, CT, RI, MA, NH, AK, HI
   HRT: [
-    'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'IA', 'WI', 'MI', 'IL', 'IN', 'OH',
-    'OK', 'TX', 'LA', 'KY', 'FL', 'NC', 'SC',
-    'VA', 'MD', 'DE', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
+    'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'CO', 'AZ', 'NM',
+    'ND', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'OH', 'MI',
+    'FL', 'ME', 'VT', 'NY', 'PA', 'NJ', 'MD', 'VA', 'NC'
   ],
   
   // FountainGLP - GLP-1 Weight Loss (Purple states)
+  // Active: 30 states | Pending: WY, SD, KS, OK, MO, AR, LA, TN, MS, AL, GA, SC, WV, DC, DE, MA, RI, CT, AK, HI
   GLP: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'MN', 'IA', 'WI', 'MI', 'IL', 'IN', 'OH', 'KY',
-    'TX', 'LA', 'FL', 'NC', 'SC', 'VA', 'WV',
-    'MD', 'DE', 'DC', 'PA', 'NJ', 'NY', 'CT', 'RI', 'MA', 'VT', 'NH', 'ME'
+    'ND', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'MI', 'OH',
+    'KY', 'NY', 'PA', 'MD', 'NJ', 'NC', 'FL', 'VT', 'NH', 'ME'
   ],
 
   // Fountain State Planning (Blue states)
+  // 9 states total
   Planning: [
-    'ND', 'SD', 'WY', 'NV', 'MO', 'AR', 'MS', 'WV', 'HI'
+    'NV', 'WY', 'ND', 'SD', 'MO', 'AR', 'MS', 'WV', 'RI'
   ],
 };
 
