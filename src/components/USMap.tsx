@@ -205,8 +205,7 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
 
   // Download CSV for all services combined
   const downloadAllServicesCSV = useCallback(() => {
-    const services: ServiceType[] = ['TRT', 'HRT', 'GLP'];
-    const allStates = US_STATES.sort((a, b) => a.name.localeCompare(b.name));
+    const allStates = [...US_STATES].sort((a, b) => a.name.localeCompare(b.name));
     
     const csvContent = [
       'State Abbreviation,State Name,TRT,HRT,GLP',
