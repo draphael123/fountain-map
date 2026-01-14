@@ -94,6 +94,23 @@ body {
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
+/* State highlight pulse animation */
+@keyframes state-highlight-pulse {
+  0% {
+    filter: brightness(1.2) drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+  }
+  50% {
+    filter: brightness(1.4) drop-shadow(0 0 16px rgba(251, 191, 36, 1));
+  }
+  100% {
+    filter: brightness(1.2) drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+  }
+}
+
+.state-highlight-pulse {
+  animation: state-highlight-pulse 0.8s ease-in-out infinite;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

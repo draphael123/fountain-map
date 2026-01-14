@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -18,6 +18,35 @@ import {
 } from '../data/serviceAvailability';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
+
+// Regional definitions
+const REGIONS: Record<string, { name: string; states: string[]; color: string }> = {
+  west: {
+    name: 'West Coast',
+    states: ['WA', 'OR', 'CA', 'NV', 'AK', 'HI'],
+    color: '#3B82F6',
+  },
+  mountain: {
+    name: 'Mountain',
+    states: ['MT', 'ID', 'WY', 'UT', 'CO', 'AZ', 'NM'],
+    color: '#8B5CF6',
+  },
+  midwest: {
+    name: 'Midwest',
+    states: ['ND', 'SD', 'NE', 'KS', 'MN', 'IA', 'MO', 'WI', 'IL', 'MI', 'IN', 'OH'],
+    color: '#F59E0B',
+  },
+  south: {
+    name: 'South',
+    states: ['TX', 'OK', 'AR', 'LA', 'MS', 'AL', 'TN', 'KY', 'WV', 'VA', 'NC', 'SC', 'GA', 'FL'],
+    color: '#EF4444',
+  },
+  northeast: {
+    name: 'Northeast',
+    states: ['ME', 'NH', 'VT', 'MA', 'RI', 'CT', 'NY', 'NJ', 'PA', 'DE', 'MD', 'DC'],
+    color: '#10B981',
+  },
+};
 
 // State FIPS codes to state abbreviations mapping
 const FIPS_TO_STATE: Record<string, string> = {
@@ -119,10 +148,80 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [highlightedState, setHighlightedState] = useState<string | null>(null);
+  const [mapZoom, setMapZoom] = useState(1);
+  const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   
   const serviceInfo = SERVICE_INFO[selectedService];
   const activeColor = serviceInfo.color;
   const inactiveColor = '#D1D5DB';
+
+  // Clear highlight after animation
+  useEffect(() => {
+    if (highlightedState) {
+      const timer = setTimeout(() => setHighlightedState(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedState]);
+
+  // Regional statistics
+  const regionalStats = useMemo(() => {
+    return Object.entries(REGIONS).map(([key, region]) => {
+      const availableInRegion = region.states.filter(stateId => 
+        isServiceAvailable(stateId, selectedService)
+      ).length;
+      return {
+        key,
+        ...region,
+        available: availableInRegion,
+        total: region.states.length,
+        percentage: Math.round((availableInRegion / region.states.length) * 100),
+      };
+    });
+  }, [selectedService]);
+
+  // Zoom handlers
+  const handleZoomIn = useCallback(() => {
+    setMapZoom(prev => Math.min(prev + 0.5, 3));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setMapZoom(prev => {
+      const newZoom = Math.max(prev - 0.5, 1);
+      if (newZoom === 1) setMapPosition({ x: 0, y: 0 });
+      return newZoom;
+    });
+  }, []);
+
+  const handleResetZoom = useCallback(() => {
+    setMapZoom(1);
+    setMapPosition({ x: 0, y: 0 });
+  }, []);
+
+  // Drag handlers for panning
+  const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (mapZoom <= 1) return;
+    setIsDragging(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setDragStart({ x: clientX - mapPosition.x, y: clientY - mapPosition.y });
+  }, [mapZoom, mapPosition]);
+
+  const handleDragMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setMapPosition({
+      x: clientX - dragStart.x,
+      y: clientY - dragStart.y,
+    });
+  }, [isDragging, dragStart]);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
 
   const createMouseEnterHandler = useCallback((geo: GeographyObject) => {
     return (event: React.MouseEvent<SVGPathElement>) => {
@@ -284,6 +383,7 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                   <button
                     key={state.id}
                     onClick={() => {
+                      setHighlightedState(state.id);
                       onCheckState(state.id);
                       setSearchQuery('');
                     }}
@@ -330,14 +430,129 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
         </button>
       </div>
 
-      {/* Map container */}
-      <div className="w-full max-w-5xl mx-auto px-2 sm:px-4">
-        <ComposableMap
-          projection="geoAlbersUsa"
-          projectionConfig={{
-            scale: 1000,
-          }}
+      {/* Regional Summary Cards */}
+      <div className="max-w-5xl mx-auto mb-6 px-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+          {regionalStats.map(region => (
+            <div 
+              key={region.key}
+              className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: region.color }}
+                />
+                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate">
+                  {region.name}
+                </span>
+              </div>
+              <div className="flex items-end justify-between">
+                <div>
+                  <span 
+                    className="text-lg font-bold"
+                    style={{ color: region.percentage >= 50 ? activeColor : '#9CA3AF' }}
+                  >
+                    {region.available}
+                  </span>
+                  <span className="text-xs text-gray-400">/{region.total}</span>
+                </div>
+                <div 
+                  className="text-xs font-medium px-1.5 py-0.5 rounded"
+                  style={{ 
+                    backgroundColor: region.percentage >= 50 ? `${activeColor}20` : '#F3F4F6',
+                    color: region.percentage >= 50 ? activeColor : '#6B7280'
+                  }}
+                >
+                  {region.percentage}%
+                </div>
+              </div>
+              {/* Mini progress bar */}
+              <div className="mt-2 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ 
+                    width: `${region.percentage}%`,
+                    backgroundColor: activeColor
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Map container with zoom */}
+      <div className="relative w-full max-w-5xl mx-auto px-2 sm:px-4">
+        {/* Zoom Controls */}
+        <div className="absolute top-2 right-2 sm:right-6 z-30 flex flex-col gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <button
+            onClick={handleZoomIn}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title="Zoom in"
+          >
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </button>
+          <div className="border-t border-gray-200 dark:border-gray-700" />
+          <button
+            onClick={handleZoomOut}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title="Zoom out"
+          >
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+            </svg>
+          </button>
+          {mapZoom > 1 && (
+            <>
+              <div className="border-t border-gray-200 dark:border-gray-700" />
+              <button
+                onClick={handleResetZoom}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Reset zoom"
+              >
+                <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </>
+          )}
+        </div>
+        
+        {/* Zoom indicator */}
+        {mapZoom > 1 && (
+          <div className="absolute top-2 left-2 sm:left-6 z-30 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
+            {Math.round(mapZoom * 100)}%
+          </div>
+        )}
+
+        {/* Map with zoom/pan */}
+        <div 
+          className="overflow-hidden rounded-xl"
+          style={{ cursor: mapZoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDragMove}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
         >
+          <div
+            style={{
+              transform: `scale(${mapZoom}) translate(${mapPosition.x / mapZoom}px, ${mapPosition.y / mapZoom}px)`,
+              transformOrigin: 'center center',
+              transition: isDragging ? 'none' : 'transform 0.3s ease',
+            }}
+          >
+            <ComposableMap
+              projection="geoAlbersUsa"
+              projectionConfig={{
+                scale: 1000,
+              }}
+            >
           <Geographies geography={GEO_URL}>
             {({ geographies }) => (
               <>
@@ -345,18 +560,20 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                 {geographies.map((geo) => {
                   const stateId = FIPS_TO_STATE[geo.id] || geo.id;
                   const isAvailable = isServiceAvailable(stateId, selectedService);
+                  const isHighlighted = highlightedState === stateId;
                   
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={isAvailable ? activeColor : inactiveColor}
-                      stroke="#ffffff"
-                      strokeWidth={0.75}
+                      fill={isHighlighted ? '#FBBF24' : (isAvailable ? activeColor : inactiveColor)}
+                      stroke={isHighlighted ? '#F59E0B' : '#ffffff'}
+                      strokeWidth={isHighlighted ? 2.5 : 0.75}
                       style={{
                         default: {
                           outline: 'none',
-                          transition: 'fill 0.4s ease',
+                          transition: 'fill 0.3s ease, stroke 0.3s ease, stroke-width 0.3s ease',
+                          filter: isHighlighted ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.9))' : 'none',
                         },
                         hover: {
                           fill: isAvailable ? activeColor : '#9CA3AF',
@@ -372,7 +589,10 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                       onMouseEnter={createMouseEnterHandler(geo)}
                       onMouseLeave={handleMouseLeave}
                       onMouseMove={handleMouseMove}
-                      onClick={() => handleStateClick(stateId)}
+                      onClick={() => {
+                        setHighlightedState(stateId);
+                        handleStateClick(stateId);
+                      }}
                     />
                   );
                 })}
@@ -443,6 +663,8 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             );
           })}
         </ComposableMap>
+          </div>
+        </div>
       </div>
 
       {/* Legend */}
