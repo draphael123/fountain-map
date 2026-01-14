@@ -177,6 +177,58 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
     return SERVICE_AVAILABILITY[selectedService].length;
   }, [selectedService]);
 
+  // Download CSV for a specific service
+  const downloadServiceCSV = useCallback((service: ServiceType) => {
+    const activeStates = SERVICE_AVAILABILITY[service];
+    const stateData = activeStates
+      .map(id => {
+        const state = US_STATES.find(s => s.id === id);
+        return state ? { id, name: state.name } : { id, name: id };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    const csvContent = [
+      'State Abbreviation,State Name',
+      ...stateData.map(s => `${s.id},${s.name}`)
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Fountain${SERVICE_INFO[service].name}_Active_States.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  // Download CSV for all services combined
+  const downloadAllServicesCSV = useCallback(() => {
+    const services: ServiceType[] = ['TRT', 'HRT', 'GLP'];
+    const allStates = US_STATES.sort((a, b) => a.name.localeCompare(b.name));
+    
+    const csvContent = [
+      'State Abbreviation,State Name,TRT,HRT,GLP',
+      ...allStates.map(state => {
+        const trt = SERVICE_AVAILABILITY.TRT.includes(state.id) ? 'Yes' : 'No';
+        const hrt = SERVICE_AVAILABILITY.HRT.includes(state.id) ? 'Yes' : 'No';
+        const glp = SERVICE_AVAILABILITY.GLP.includes(state.id) ? 'Yes' : 'No';
+        return `${state.id},${state.name},${trt},${hrt},${glp}`;
+      })
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Fountain_All_Services_Availability.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, []);
+
   // Get active and inactive states for the dropdown
   const { activeStates, inactiveStates } = useMemo(() => {
     const active = sortedStates.filter(s => s.isAvailable);
@@ -410,6 +462,28 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
           />
           <span className="text-sm text-gray-700 dark:text-gray-300">Coming Soon</span>
         </div>
+      </div>
+
+      {/* Download CSV Section */}
+      <div className="flex justify-center gap-3 mt-6 px-4 flex-wrap">
+        <button
+          onClick={() => downloadServiceCSV(selectedService)}
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download {serviceInfo.name} States (CSV)
+        </button>
+        <button
+          onClick={downloadAllServicesCSV}
+          className="flex items-center gap-2 px-4 py-2 bg-fountain-dark text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download All Services (CSV)
+        </button>
       </div>
 
       {/* Service Description Section - Hide for Planning */}
