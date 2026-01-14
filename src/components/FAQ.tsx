@@ -33,10 +33,6 @@ const faqs: FAQItem[] = [
   {
     question: "Are consultations done online or in-person?",
     answer: "All Fountain consultations are conducted online through our secure telehealth platform. This allows you to connect with licensed providers from the comfort of your home while receiving the same quality of care as an in-person visit."
-  },
-  {
-    question: "What is Fountain State Planning?",
-    answer: "Fountain State Planning provides comprehensive planning services to help you navigate important life decisions. Our expert team offers personalized guidance to help you prepare for the future with the right strategies and resources in place."
   }
 ];
 
