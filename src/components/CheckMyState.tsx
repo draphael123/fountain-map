@@ -44,11 +44,11 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
     );
   }, [searchQuery]);
 
-  // Get services for selected state
+  // Get services for selected state (excluding Planning)
   const stateServices = useMemo(() => {
     if (!selectedState) return null;
     const stateName = US_STATES.find(s => s.id === selectedState)?.name || selectedState;
-    const services = (['TRT', 'HRT', 'GLP', 'Planning'] as ServiceType[]).map(service => ({
+    const services = (['TRT', 'HRT', 'GLP'] as ServiceType[]).map(service => ({
       service,
       info: SERVICE_INFO[service],
       available: isServiceAvailable(selectedState, service),
@@ -124,7 +124,7 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
               {/* States List */}
               <div className="space-y-1 max-h-64 overflow-y-auto">
                 {filteredStates.map(state => {
-                  const availableServices = getServicesForState(state.id);
+                  const availableServices = getServicesForState(state.id).filter(s => s !== 'Planning');
                   return (
                     <button
                       key={state.id}
