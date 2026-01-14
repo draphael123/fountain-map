@@ -674,15 +674,19 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             className="w-5 h-5 rounded shadow-sm service-bg-transition"
             style={{ backgroundColor: activeColor }}
           />
-          <span className="text-sm text-gray-700 dark:text-gray-300">Service Available</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {selectedService === 'Planning' ? 'Expanding Soon' : 'Service Available'}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <div 
-            className="w-5 h-5 rounded shadow-sm"
-            style={{ backgroundColor: inactiveColor }}
-          />
-          <span className="text-sm text-gray-700 dark:text-gray-300">Coming Soon</span>
-        </div>
+        {selectedService !== 'Planning' && (
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-5 h-5 rounded shadow-sm"
+              style={{ backgroundColor: inactiveColor }}
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Coming Soon</span>
+          </div>
+        )}
       </div>
 
       {/* Download CSV Section */}
@@ -746,25 +750,33 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-            <h3 className="text-lg font-bold text-fountain-dark dark:text-white">Complete States List</h3>
+            <h3 className="text-lg font-bold text-fountain-dark dark:text-white">
+              {selectedService === 'Planning' ? 'Expansion States' : 'Complete States List'}
+            </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Use Ctrl+F (Cmd+F on Mac) to quickly find your state • {activeStates.length} available • {inactiveStates.length} coming soon
+              {selectedService === 'Planning' 
+                ? `Use Ctrl+F (Cmd+F on Mac) to quickly find your state • ${activeStates.length} states`
+                : `Use Ctrl+F (Cmd+F on Mac) to quickly find your state • ${activeStates.length} available • ${inactiveStates.length} coming soon`
+              }
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-0">
+          <div className={`grid ${selectedService === 'Planning' ? 'grid-cols-1' : 'md:grid-cols-2'} gap-0`}>
             {/* Available States */}
-            <div className="p-4 md:border-r border-gray-100 dark:border-gray-700">
+            <div className={`p-4 ${selectedService !== 'Planning' ? 'md:border-r border-gray-100 dark:border-gray-700' : ''}`}>
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
                 <span 
                   className="w-3 h-3 rounded-full service-bg-transition"
                   style={{ backgroundColor: activeColor }}
                 />
                 <span className="font-bold text-sm service-color-transition" style={{ color: activeColor }}>
-                  Available States ({activeStates.length})
+                  {selectedService === 'Planning' 
+                    ? `States we'll be expanding to soon! (${activeStates.length})`
+                    : `Available States (${activeStates.length})`
+                  }
                 </span>
               </div>
-              <div className="space-y-1">
+              <div className={`${selectedService === 'Planning' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1' : 'space-y-1'}`}>
                 {activeStates.map(state => (
                   <div 
                     key={state.id}
@@ -783,32 +795,34 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
               </div>
             </div>
 
-            {/* Coming Soon States */}
-            <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50">
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-                <span 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: inactiveColor }}
-                />
-                <span className="font-bold text-sm text-gray-500">
-                  Coming Soon ({inactiveStates.length})
-                </span>
+            {/* Coming Soon States - Hide for Planning */}
+            {selectedService !== 'Planning' && (
+              <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50">
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+                  <span 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: inactiveColor }}
+                  />
+                  <span className="font-bold text-sm text-gray-500">
+                    Coming Soon ({inactiveStates.length})
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {inactiveStates.map(state => (
+                    <div 
+                      key={state.id}
+                      className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                      onClick={() => onCheckState(state.id)}
+                    >
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{state.name}</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                        {state.id}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-1">
-                {inactiveStates.map(state => (
-                  <div 
-                    key={state.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                    onClick={() => onCheckState(state.id)}
-                  >
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{state.name}</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                      {state.id}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
