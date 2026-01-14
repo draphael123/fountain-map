@@ -412,37 +412,39 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
         </div>
       </div>
 
-      {/* Service Description Section */}
-      <div className="max-w-3xl mx-auto mt-8 sm:mt-12 px-4">
-        <div 
-          className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 sm:p-8 shadow-sm service-border-transition"
-          style={{ borderColor: `${activeColor}30` }}
-        >
-          <div className="flex items-start gap-4">
-            <div 
-              className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center service-bg-transition"
-              style={{ backgroundColor: `${activeColor}15` }}
-            >
-              <svg 
-                className="w-6 h-6 service-color-transition" 
-                fill="none" 
-                stroke={activeColor} 
-                viewBox="0 0 24 24"
+      {/* Service Description Section - Hide for Planning */}
+      {selectedService !== 'Planning' && (
+        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 px-4">
+          <div 
+            className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 sm:p-8 shadow-sm service-border-transition"
+            style={{ borderColor: `${activeColor}30` }}
+          >
+            <div className="flex items-start gap-4">
+              <div 
+                className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center service-bg-transition"
+                style={{ backgroundColor: `${activeColor}15` }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg sm:text-xl font-bold text-fountain-dark dark:text-white mb-2">
-                About Fountain<span className="service-color-transition" style={{ color: activeColor }}>{serviceInfo.name}</span>
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm sm:text-base">
-                {serviceInfo.longDescription}
-              </p>
+                <svg 
+                  className="w-6 h-6 service-color-transition" 
+                  fill="none" 
+                  stroke={activeColor} 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg sm:text-xl font-bold text-fountain-dark dark:text-white mb-2">
+                  About Fountain<span className="service-color-transition" style={{ color: activeColor }}>{serviceInfo.name}</span>
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm sm:text-base">
+                  {serviceInfo.longDescription}
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* States List - Always Visible for Ctrl+F Search */}
       <div className="max-w-4xl mx-auto mt-8 px-4">
