@@ -87,9 +87,9 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   ],
 
   // Fountain State Planning (Blue states)
-  // 9 states total
+  // 10 states total
   Planning: [
-    'NV', 'WY', 'ND', 'SD', 'MO', 'AR', 'MS', 'WV', 'RI'
+    'NV', 'WY', 'ND', 'SD', 'MO', 'AR', 'MS', 'WV', 'RI', 'HI'
   ],
 };
 
