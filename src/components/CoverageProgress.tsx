@@ -152,16 +152,6 @@ export function CoverageProgress() {
             </div>
           </div>
 
-          {/* Goal Banner */}
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <div className="inline-flex items-center gap-3 bg-white/10 rounded-full px-6 py-3 backdrop-blur-sm">
-              <span className="text-2xl">🎯</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold">Our Goal: 50 States by 2027</p>
-                <p className="text-xs text-gray-300">Bringing wellness to every American</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
