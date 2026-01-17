@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { SERVICE_AVAILABILITY, SERVICE_INFO, US_STATES, ServiceType } from '../data/serviceAvailability';
+import { SERVICE_AVAILABILITY, SERVICE_INFO, US_STATES } from '../data/serviceAvailability';
 
 export function CoverageProgress() {
   const stats = useMemo(() => {
