@@ -1,16 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
-import { USMap } from './components/USMap';
 import { MultiServiceMap } from './components/MultiServiceMap';
 import { Statistics } from './components/Statistics';
 import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { CheckMyState } from './components/CheckMyState';
 import { MobileStateSelector } from './components/MobileStateSelector';
+import { ExpansionBanner } from './components/ExpansionBanner';
+import { ServiceQuickLinks } from './components/ServiceQuickLinks';
+import { ServiceComparison } from './components/ServiceComparison';
+import { CoverageProgress } from './components/CoverageProgress';
+import { MapSkeleton } from './components/MapSkeleton';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
 
-type ViewMode = 'single' | 'multi' | 'stats' | 'faq';
+// Lazy load the map for better initial load performance
+const USMap = lazy(() => import('./components/USMap').then(module => ({ default: module.USMap })));
+
+type ViewMode = 'single' | 'multi' | 'compare' | 'stats' | 'faq';
 
 function AppContent() {
   const [selectedService, setSelectedService] = useState<ServiceType>('TRT');
@@ -29,7 +36,7 @@ function AppContent() {
       setSelectedService(serviceParam === 'PLANNING' ? 'Planning' : serviceParam as ServiceType);
     }
     
-    if (viewParam && ['single', 'multi', 'stats', 'faq'].includes(viewParam)) {
+    if (viewParam && ['single', 'multi', 'compare', 'stats', 'faq'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
     
@@ -73,19 +80,38 @@ function AppContent() {
         <div className="max-w-7xl mx-auto">
           {viewMode === 'single' && (
             <>
+              {/* Expansion Banner - Only for non-Planning services */}
+              {selectedService !== 'Planning' && <ExpansionBanner />}
+              
               <MobileStateSelector 
                 selectedService={selectedService}
                 onSelectState={handleCheckState}
               />
-              <USMap 
-                selectedService={selectedService} 
-                onCheckState={handleCheckState}
-              />
+              
+              {/* Map with loading skeleton */}
+              <Suspense fallback={<MapSkeleton />}>
+                <USMap 
+                  selectedService={selectedService} 
+                  onCheckState={handleCheckState}
+                />
+              </Suspense>
+              
+              {/* Service Quick Links - Only for non-Planning services */}
+              {selectedService !== 'Planning' && (
+                <ServiceQuickLinks selectedService={selectedService} />
+              )}
+              
+              {/* Coverage Progress - Show below single map view */}
+              <CoverageProgress />
             </>
           )}
           
           {viewMode === 'multi' && (
             <MultiServiceMap onCheckState={handleCheckState} />
+          )}
+          
+          {viewMode === 'compare' && (
+            <ServiceComparison />
           )}
           
           {viewMode === 'stats' && (

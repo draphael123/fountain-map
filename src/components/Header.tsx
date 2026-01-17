@@ -1,7 +1,7 @@
 import { ServiceType, SERVICE_INFO } from '../data/serviceAvailability';
 import { ThemeToggle } from './ThemeToggle';
 
-type ViewMode = 'single' | 'multi' | 'stats' | 'faq';
+type ViewMode = 'single' | 'multi' | 'compare' | 'stats' | 'faq';
 
 interface HeaderProps {
   selectedService: ServiceType;
@@ -39,6 +39,7 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
             {[
               { id: 'single', label: 'Service Map', icon: '🗺️' },
               { id: 'multi', label: 'Coverage', icon: '📊' },
+              { id: 'compare', label: 'Compare', icon: '⚖️' },
               { id: 'stats', label: 'Stats', icon: '📈' },
               { id: 'faq', label: 'FAQ', icon: '❓' },
             ].map(({ id, label, icon }) => (
