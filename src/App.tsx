@@ -7,7 +7,6 @@ import { Footer } from './components/Footer';
 import { CheckMyState } from './components/CheckMyState';
 import { MobileStateSelector } from './components/MobileStateSelector';
 import { ExpansionBanner } from './components/ExpansionBanner';
-import { ServiceQuickLinks } from './components/ServiceQuickLinks';
 import { ServiceComparison } from './components/ServiceComparison';
 import { CoverageProgress } from './components/CoverageProgress';
 import { MapSkeleton } from './components/MapSkeleton';
@@ -96,10 +95,6 @@ function AppContent() {
                 />
               </Suspense>
               
-              {/* Service Quick Links - Only for non-Planning services */}
-              {selectedService !== 'Planning' && (
-                <ServiceQuickLinks selectedService={selectedService} />
-              )}
               
               {/* Coverage Progress - Show below single map view */}
               <CoverageProgress />
