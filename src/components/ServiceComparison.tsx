@@ -196,38 +196,6 @@ export function ServiceComparison() {
         </div>
       </div>
 
-      {/* States Coming Soon */}
-      {stats.statesWithNone.length > 0 && (
-        <div className="mt-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gray-400 flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-700 dark:text-gray-200">
-                Coming Soon
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No services available yet
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {stats.statesWithNone
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map(state => (
-                <span 
-                  key={state.id}
-                  className="px-3 py-1.5 bg-white dark:bg-gray-700 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600"
-                >
-                  {state.name}
-                </span>
-              ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
