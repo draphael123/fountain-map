@@ -6,7 +6,6 @@ import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { CheckMyState } from './components/CheckMyState';
 import { MobileStateSelector } from './components/MobileStateSelector';
-import { ExpansionBanner } from './components/ExpansionBanner';
 import { ServiceComparison } from './components/ServiceComparison';
 import { CoverageProgress } from './components/CoverageProgress';
 import { MapSkeleton } from './components/MapSkeleton';
@@ -79,8 +78,6 @@ function AppContent() {
         <div className="max-w-7xl mx-auto">
           {viewMode === 'single' && (
             <>
-              {/* Expansion Banner - Only for non-Planning services */}
-              {selectedService !== 'Planning' && <ExpansionBanner />}
               
               <MobileStateSelector 
                 selectedService={selectedService}
