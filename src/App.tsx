@@ -1,5 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
+import { ExpansionBanner } from './components/ExpansionBanner';
 import { MultiServiceMap } from './components/MultiServiceMap';
 import { Statistics } from './components/Statistics';
 import { FAQ } from './components/FAQ';
@@ -73,6 +74,8 @@ function AppContent() {
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
       />
+      
+      <ExpansionBanner />
       
       <main className="flex-grow py-8 sm:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">

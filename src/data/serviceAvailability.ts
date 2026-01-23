@@ -63,18 +63,18 @@ export const US_STATES: StateInfo[] = [
 // Service availability data extracted from the source spreadsheet
 export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
-  // Active: 29 states | Pending: WY, SD, KS, OK, MO, AR, LA, MS, KY, TN, AL, GA, SC, WV, DE, CT, RI, MA, NH, DC, AK, HI
+  // Active: 30 states | Pending: WY, KS, OK, MO, AR, LA, MS, KY, TN, AL, GA, SC, WV, DE, CT, RI, MA, NH, DC, AK, HI
   TRT: [
-    'WA', 'OR', 'CA', 'MT', 'ID', 'NV', 'UT', 'AZ', 'ND', 'CO',
+    'WA', 'OR', 'CA', 'MT', 'ID', 'NV', 'UT', 'AZ', 'ND', 'SD', 'CO',
     'NM', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'MI', 'OH',
     'PA', 'NY', 'VT', 'ME', 'NJ', 'MD', 'VA', 'NC', 'FL'
   ],
   
   // FountainHRT - Hormone Replacement Therapy (Pink states)
-  // Active: 29 states | Pending: WY, SD, KS, OK, MO, AR, LA, MS, TN, KY, AL, GA, SC, WV, DE, DC, CT, RI, MA, NH, AK, HI
+  // Active: 30 states | Pending: WY, KS, OK, MO, AR, LA, MS, TN, KY, AL, GA, SC, WV, DE, DC, CT, RI, MA, NH, AK, HI
   HRT: [
     'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'CO', 'AZ', 'NM',
-    'ND', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'OH', 'MI',
+    'ND', 'SD', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'OH', 'MI',
     'FL', 'ME', 'VT', 'NY', 'PA', 'NJ', 'MD', 'VA', 'NC'
   ],
   
