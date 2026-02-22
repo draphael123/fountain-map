@@ -11,8 +11,6 @@ import {
   loadProviderLicensingData,
   stateHasSelectedProviders,
   getProviderValueInState,
-  parseLicenseDate,
-  isExpired,
   type ProviderLicensingData,
   type ProviderLicensingRow,
 } from '../data/providerAuthority';
@@ -148,7 +146,6 @@ export function ProviderAuthorityMap() {
     if (!data || selectedProviders.length === 0) return null;
     const statesWithAny = new Set<string>();
     const byService: Record<string, Set<string>> = { TRT: new Set(), HRT: new Set(), GLP: new Set() };
-    let expiredCount = 0;
 
     data.rows.forEach((row) => {
       selectedProviders.forEach((p) => {
@@ -157,15 +154,12 @@ export function ProviderAuthorityMap() {
         statesWithAny.add(row.stateId);
         const services = data.providerToServices[p] ?? [];
         services.forEach((s) => byService[s]?.add(row.stateId));
-        const d = parseLicenseDate(val);
-        if (isExpired(d)) expiredCount++;
       });
     });
 
     return {
       totalStates: statesWithAny.size,
       byService: Object.fromEntries(Object.entries(byService).map(([s, set]) => [s, set.size])) as Record<string, number>,
-      expiredCount,
     };
   }, [data, selectedProviders]);
 
@@ -352,12 +346,6 @@ export function ProviderAuthorityMap() {
                   </p>
                 </div>
               ))}
-              {providerCoverageSummary.expiredCount > 0 && (
-                <div>
-                  <span className="text-sm text-red-600 dark:text-red-400">Expired</span>
-                  <p className="text-lg font-bold text-red-600 dark:text-red-400">{providerCoverageSummary.expiredCount}</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
