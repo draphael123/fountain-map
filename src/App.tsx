@@ -2,21 +2,18 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { ExpansionBanner } from './components/ExpansionBanner';
 import { MultiServiceMap } from './components/MultiServiceMap';
-import { Statistics } from './components/Statistics';
-import { FAQ } from './components/FAQ';
 import { Footer } from './components/Footer';
 import { CheckMyState } from './components/CheckMyState';
 import { MobileStateSelector } from './components/MobileStateSelector';
-import { ServiceComparison } from './components/ServiceComparison';
-import { CoverageProgress } from './components/CoverageProgress';
 import { MapSkeleton } from './components/MapSkeleton';
+import { ProviderAuthorityMap } from './components/ProviderAuthorityMap';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
 
 // Lazy load the map for better initial load performance
 const USMap = lazy(() => import('./components/USMap').then(module => ({ default: module.USMap })));
 
-type ViewMode = 'single' | 'multi' | 'compare' | 'stats' | 'faq';
+type ViewMode = 'single' | 'multi' | 'provider';
 
 function AppContent() {
   const [selectedService, setSelectedService] = useState<ServiceType>('TRT');
@@ -35,7 +32,7 @@ function AppContent() {
       setSelectedService(serviceParam === 'PLANNING' ? 'Planning' : serviceParam as ServiceType);
     }
     
-    if (viewParam && ['single', 'multi', 'compare', 'stats', 'faq'].includes(viewParam)) {
+    if (viewParam && ['single', 'multi', 'provider'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
     
@@ -95,26 +92,15 @@ function AppContent() {
                 />
               </Suspense>
               
-              
-              {/* Coverage Progress - Show below single map view */}
-              <CoverageProgress />
             </>
           )}
           
           {viewMode === 'multi' && (
             <MultiServiceMap onCheckState={handleCheckState} />
           )}
-          
-          {viewMode === 'compare' && (
-            <ServiceComparison />
-          )}
-          
-          {viewMode === 'stats' && (
-            <Statistics />
-          )}
-          
-          {viewMode === 'faq' && (
-            <FAQ />
+
+          {viewMode === 'provider' && (
+            <ProviderAuthorityMap />
           )}
         </div>
       </main>

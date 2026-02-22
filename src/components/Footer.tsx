@@ -1,4 +1,5 @@
 import { SERVICE_INFO, ServiceType } from '../data/serviceAvailability';
+import { DATA_LAST_UPDATED } from '../data/dataMeta';
 
 export function Footer() {
   const services: ServiceType[] = ['TRT', 'HRT', 'GLP'];
@@ -42,25 +43,19 @@ export function Footer() {
           {/* Contact */}
           <div className="text-center md:text-right">
             <h3 className="font-semibold text-lg mb-4">Get Started</h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-gray-400 text-sm">
               Check if our services are available in your state and start your wellness journey today.
             </p>
-            <a 
-              href="#" 
-              className="inline-flex items-center gap-2 bg-fountain-trt text-fountain-dark px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-teal-300 transition-colors"
-            >
-              Learn More
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-8 pt-8 border-t border-white/10 text-center">
+        <div className="mt-8 pt-8 border-t border-white/10 text-center space-y-1">
+          <p className="text-gray-400 text-xs">
+            Data last updated: {DATA_LAST_UPDATED}
+          </p>
           <p className="text-gray-500 text-xs">
-            © {new Date().getFullYear()} Fountain Vitality. All rights reserved. 
+            © {new Date().getFullYear()} Fountain Vitality. All rights reserved.
             Service availability subject to state regulations.
           </p>
         </div>
