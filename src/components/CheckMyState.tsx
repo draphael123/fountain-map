@@ -77,7 +77,7 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-modal-in">
+      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-modal-in">
         {/* Header */}
         <div className="bg-fountain-dark text-white px-6 py-4">
           <div className="flex items-center justify-between">
@@ -116,7 +116,7 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
                   placeholder="Search for your state..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-fountain-trt focus:outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-fountain-dark dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-fountain-trt focus:outline-none transition-colors"
                   autoFocus
                 />
               </div>
@@ -129,11 +129,11 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
                     <button
                       key={state.id}
                       onClick={() => setSelectedState(state.id)}
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
                     >
                       <div>
-                        <span className="font-medium text-fountain-dark">{state.name}</span>
-                        <span className="text-gray-400 ml-2">({state.id})</span>
+                        <span className="font-medium text-fountain-dark dark:text-white">{state.name}</span>
+                        <span className="text-gray-400 dark:text-gray-500 ml-2">({state.id})</span>
                       </div>
                       <div className="flex gap-1">
                         {availableServices.length > 0 ? (
@@ -152,7 +152,7 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
                   );
                 })}
                 {filteredStates.length === 0 && (
-                  <p className="text-center text-gray-500 py-4">No states found</p>
+                  <p className="text-center text-gray-500 dark:text-gray-400 py-4">No states found</p>
                 )}
               </div>
             </div>
@@ -169,8 +169,8 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
                   </svg>
                   Choose different state
                 </button>
-                <h3 className="text-2xl font-bold text-fountain-dark">{stateServices.stateName}</h3>
-                <p className="text-gray-500 mt-1">
+                <h3 className="text-2xl font-bold text-fountain-dark dark:text-white">{stateServices.stateName}</h3>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
                   {stateServices.availableCount} of {stateServices.totalServices} services available
                 </p>
               </div>
@@ -183,8 +183,8 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
                     className={`
                       p-4 rounded-xl border-2 transition-all
                       ${available 
-                        ? 'border-green-200 bg-green-50/50' 
-                        : 'border-gray-200 bg-gray-50/50'
+                        ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20' 
+                        : 'border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50'
                       }
                     `}
                   >
@@ -202,17 +202,17 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
                           />
                         </div>
                         <div>
-                          <div className="font-semibold text-fountain-dark">
+                          <div className="font-semibold text-fountain-dark dark:text-white">
                             Fountain<span style={{ color: info.color }}>{info.name}</span>
                           </div>
-                          <div className="text-sm text-gray-500">{info.shortDescription}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{info.shortDescription}</div>
                         </div>
                       </div>
                       <div className={`
                         px-3 py-1 rounded-full text-sm font-medium
                         ${available 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-gray-100 text-gray-500'
+                          ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' 
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                         }
                       `}>
                         {available ? '✓ Available' : 'Coming Soon'}
@@ -223,18 +223,18 @@ export function CheckMyState({ isOpen, onClose, preSelectedState }: CheckMyState
               </div>
 
               {/* Share Link */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-sm text-gray-500 mb-2">Share this result:</p>
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Share this result:</p>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={shareableLink}
                     readOnly
-                    className="flex-1 px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-600 truncate"
+                    className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-300 truncate"
                   />
                   <button
                     onClick={copyShareLink}
-                    className="px-4 py-2 bg-fountain-trt text-fountain-dark rounded-lg font-medium text-sm hover:bg-teal-300 transition-colors"
+                    className="px-4 py-2 bg-fountain-trt text-fountain-dark rounded-lg font-medium text-sm hover:bg-teal-300 dark:hover:bg-teal-400 transition-colors"
                   >
                     Copy
                   </button>

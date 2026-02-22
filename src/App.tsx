@@ -7,6 +7,7 @@ import { CheckMyState } from './components/CheckMyState';
 import { MobileStateSelector } from './components/MobileStateSelector';
 import { MapSkeleton } from './components/MapSkeleton';
 import { ProviderAuthorityMap } from './components/ProviderAuthorityMap';
+import { RegionalSummary } from './components/RegionalSummary';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
 
@@ -20,6 +21,23 @@ function AppContent() {
   const [checkMyStateOpen, setCheckMyStateOpen] = useState(false);
   const [preSelectedState, setPreSelectedState] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('single');
+
+  // Keyboard shortcut: / opens Check My State (when not in an input)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+        const target = e.target as HTMLElement;
+        const isInput = /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName ?? '');
+        if (!isInput) {
+          e.preventDefault();
+          setCheckMyStateOpen(true);
+          setPreSelectedState(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Handle URL parameters for shareable links
   useEffect(() => {
@@ -70,10 +88,15 @@ function AppContent() {
         onServiceChange={handleServiceChange}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
+        onSearchClick={() => {
+          setCheckMyStateOpen(true);
+          setPreSelectedState(null);
+        }}
       />
       
       <ExpansionBanner />
-      
+      <RegionalSummary />
+
       <main className="flex-grow py-8 sm:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto">
           {viewMode === 'single' && (

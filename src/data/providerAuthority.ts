@@ -71,10 +71,20 @@ export interface ProviderLicensingRow {
   providers: Record<string, string>;
 }
 
+function parseServiceString(s: string): string[] {
+  if (!s || !s.trim()) return [];
+  return s
+    .split(/[\/\s,]+/)
+    .map((x) => x.trim().toUpperCase())
+    .filter((x) => ['TRT', 'HRT', 'GLP'].includes(x));
+}
+
 export interface ProviderLicensingData {
   providers: string[];
   rows: ProviderLicensingRow[];
   stateIds: string[];
+  providerToServices: Record<string, string[]>;
+  providersByService: Record<string, string[]>;
 }
 
 export async function loadProviderLicensingData(): Promise<ProviderLicensingData> {
@@ -82,7 +92,7 @@ export async function loadProviderLicensingData(): Promise<ProviderLicensingData
   if (!res.ok) throw new Error('Failed to load provider licensing data');
   const text = await res.text();
   const rows = parseCSV(text);
-  if (rows.length < 2) return { providers: [], rows: [], stateIds: [] };
+  if (rows.length < 2) return { providers: [], rows: [], stateIds: [], providerToServices: {}, providersByService: {} };
 
   const headers = rows[0];
   const providerIndices: { index: number; name: string }[] = [];
@@ -97,7 +107,23 @@ export async function loadProviderLicensingData(): Promise<ProviderLicensingData
   const hasServiceRow =
     rows.length > 1 && rows[1] && (!rows[1][0]?.trim() || rows[1][0] === 'State') &&
     rows[1].some((cell) => /\b(TRT|HRT|GLP)\b/i.test(cell ?? ''));
+  const serviceRow = hasServiceRow ? rows[1] : null;
   const dataStartRow = hasServiceRow ? 2 : 1;
+
+  const providerToServices: Record<string, string[]> = {};
+  const providersByService: Record<string, string[]> = { TRT: [], HRT: [], GLP: [] };
+  if (serviceRow) {
+    providerIndices.forEach(({ index, name }) => {
+      const svcStr = serviceRow[index]?.trim() ?? '';
+      const services = parseServiceString(svcStr);
+      if (services.length > 0) {
+        providerToServices[name] = services;
+        services.forEach((s) => {
+          if (!providersByService[s].includes(name)) providersByService[s].push(name);
+        });
+      }
+    });
+  }
 
   const stateIdsSet = new Set<string>();
   const dataRows: ProviderLicensingRow[] = [];
@@ -118,7 +144,7 @@ export async function loadProviderLicensingData(): Promise<ProviderLicensingData
   }
 
   const stateIds = US_STATES.map((s) => s.id).filter((id) => stateIdsSet.has(id));
-  return { providers, rows: dataRows, stateIds };
+  return { providers, rows: dataRows, stateIds, providerToServices, providersByService };
 }
 
 export function stateHasSelectedProviders(
@@ -134,4 +160,23 @@ export function getProviderValueInState(
   provider: string
 ): string | undefined {
   return row?.providers[provider];
+}
+
+export function parseLicenseDate(value: string): Date | null {
+  const v = (value ?? '').trim().toLowerCase();
+  if (!v || v === 'pending') return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+export function isExpiringWithinDays(date: Date | null, days: number): boolean {
+  if (!date) return false;
+  const now = new Date();
+  const cutoff = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+  return date <= cutoff && date >= now;
+}
+
+export function isExpired(date: Date | null): boolean {
+  if (!date) return false;
+  return date < new Date();
 }

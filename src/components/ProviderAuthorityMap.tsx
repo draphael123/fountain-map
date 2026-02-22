@@ -11,10 +11,13 @@ import {
   loadProviderLicensingData,
   stateHasSelectedProviders,
   getProviderValueInState,
+  parseLicenseDate,
+  isExpired,
   type ProviderLicensingData,
   type ProviderLicensingRow,
 } from '../data/providerAuthority';
-import { US_STATES } from '../data/serviceAvailability';
+import { US_STATES, SERVICE_INFO } from '../data/serviceAvailability';
+import type { ServiceType } from '../data/serviceAvailability';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
 
@@ -57,6 +60,8 @@ const SMALL_STATES: Record<string, { dx: number; dy: number }> = {
 const ACTIVE_COLOR = '#0D9488';
 const INACTIVE_COLOR = '#D1D5DB';
 
+const SERVICE_TYPES: ServiceType[] = ['TRT', 'HRT', 'GLP'];
+
 interface TooltipState {
   x: number;
   y: number;
@@ -71,6 +76,7 @@ export function ProviderAuthorityMap() {
   const [error, setError] = useState<string | null>(null);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [selectedStateFilter, setSelectedStateFilter] = useState<string[]>([]);
+  const [selectedServiceFilter, setSelectedServiceFilter] = useState<ServiceType | ''>('');
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [providerSearch, setProviderSearch] = useState('');
   const [stateSearch, setStateSearch] = useState('');
@@ -91,9 +97,14 @@ export function ProviderAuthorityMap() {
 
   const filteredProviders = useMemo(() => {
     if (!data) return [];
+    let list = data.providers;
+    if (selectedServiceFilter) {
+      const forService = data.providersByService[selectedServiceFilter] ?? [];
+      list = forService.length > 0 ? forService : list;
+    }
     const q = providerSearch.toLowerCase();
-    return q ? data.providers.filter((p) => p.toLowerCase().includes(q)) : data.providers;
-  }, [data, providerSearch]);
+    return q ? list.filter((p) => p.toLowerCase().includes(q)) : list;
+  }, [data, providerSearch, selectedServiceFilter]);
 
   const stateFilterOptions = useMemo(() => {
     return US_STATES.filter((s) => {
@@ -128,9 +139,35 @@ export function ProviderAuthorityMap() {
   const clearFilters = useCallback(() => {
     setSelectedProviders([]);
     setSelectedStateFilter([]);
+    setSelectedServiceFilter('');
     setProviderSearch('');
     setStateSearch('');
   }, []);
+
+  const providerCoverageSummary = useMemo(() => {
+    if (!data || selectedProviders.length === 0) return null;
+    const statesWithAny = new Set<string>();
+    const byService: Record<string, Set<string>> = { TRT: new Set(), HRT: new Set(), GLP: new Set() };
+    let expiredCount = 0;
+
+    data.rows.forEach((row) => {
+      selectedProviders.forEach((p) => {
+        const val = row.providers[p];
+        if (!val) return;
+        statesWithAny.add(row.stateId);
+        const services = data.providerToServices[p] ?? [];
+        services.forEach((s) => byService[s]?.add(row.stateId));
+        const d = parseLicenseDate(val);
+        if (isExpired(d)) expiredCount++;
+      });
+    });
+
+    return {
+      totalStates: statesWithAny.size,
+      byService: Object.fromEntries(Object.entries(byService).map(([s, set]) => [s, set.size])) as Record<string, number>,
+      expiredCount,
+    };
+  }, [data, selectedProviders]);
 
   const handleMouseEnter = useCallback(
     (geo: GeographyObject) => (e: React.MouseEvent<SVGPathElement>) => {
@@ -180,9 +217,48 @@ export function ProviderAuthorityMap() {
         </p>
       </div>
 
-      <div className="max-w-5xl mx-auto mb-6 px-4 space-y-4 no-print">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+      {/* Service filter */}
+      <div className="max-w-5xl mx-auto mb-4 px-4 sm:px-6 no-print">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Filter by service (optional)
+        </label>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setSelectedServiceFilter('')}
+            className={`px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 ${
+              selectedServiceFilter === ''
+                ? 'bg-fountain-dark dark:bg-gray-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            All providers
+          </button>
+          {SERVICE_TYPES.map((svc) => (
+            <button
+              key={svc}
+              type="button"
+              onClick={() => setSelectedServiceFilter(svc)}
+              className={`px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 min-h-[44px] sm:min-h-0 ${
+                selectedServiceFilter === svc
+                  ? 'text-white shadow-md'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              style={selectedServiceFilter === svc ? { backgroundColor: SERVICE_INFO[svc].color } : undefined}
+            >
+              <span className="w-2 h-2 rounded-full bg-white/80" />
+              {svc}
+              {data?.providersByService[svc]?.length != null && (
+                <span className="text-xs opacity-90">({data.providersByService[svc].length})</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto mb-6 px-4 sm:px-6 space-y-4 no-print">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-4">
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Providers
             </label>
@@ -191,11 +267,11 @@ export function ProviderAuthorityMap() {
               placeholder="Search providers..."
               value={providerSearch}
               onChange={(e) => setProviderSearch(e.target.value)}
-              className="w-full mb-2 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-fountain-dark dark:text-white text-sm"
+              className="w-full mb-2 px-3 py-3 sm:py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-fountain-dark dark:text-white text-sm min-h-[44px] sm:min-h-0"
             />
-            <div className="max-h-40 overflow-y-auto space-y-1">
+            <div className="max-h-40 overflow-y-auto space-y-0.5 sm:space-y-1">
               {filteredProviders.slice(0, 50).map((name) => (
-                <label key={name} className="flex items-center gap-2 cursor-pointer text-sm">
+                <label key={name} className="flex items-center gap-2 cursor-pointer text-sm py-2 sm:py-0.5 min-h-[44px] sm:min-h-0 -mx-1 px-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 touch-manipulation">
                   <input
                     type="checkbox"
                     checked={selectedProviders.includes(name)}
@@ -214,7 +290,7 @@ export function ProviderAuthorityMap() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-4">
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               States (optional – limit map to these)
             </label>
@@ -223,11 +299,11 @@ export function ProviderAuthorityMap() {
               placeholder="Search states..."
               value={stateSearch}
               onChange={(e) => setStateSearch(e.target.value)}
-              className="w-full mb-2 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-fountain-dark dark:text-white text-sm"
+              className="w-full mb-2 px-3 py-3 sm:py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-fountain-dark dark:text-white text-sm min-h-[44px] sm:min-h-0"
             />
-            <div className="max-h-40 overflow-y-auto space-y-1">
+            <div className="max-h-40 overflow-y-auto space-y-0.5 sm:space-y-1">
               {filteredStateFilterOptions.slice(0, 30).map((s) => (
-                <label key={s.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                <label key={s.id} className="flex items-center gap-2 cursor-pointer text-sm py-2 sm:py-0.5 min-h-[44px] sm:min-h-0 -mx-1 px-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 touch-manipulation">
                   <input
                     type="checkbox"
                     checked={selectedStateFilter.includes(s.id)}
@@ -251,12 +327,41 @@ export function ProviderAuthorityMap() {
           <button
             type="button"
             onClick={clearFilters}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="px-5 py-3 sm:px-4 sm:py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 min-h-[44px] sm:min-h-0 touch-manipulation"
           >
             Clear filters
           </button>
         </div>
       </div>
+
+      {/* Provider coverage summary */}
+      {providerCoverageSummary && selectedProviders.length > 0 && (
+        <div className="max-w-5xl mx-auto mb-6 px-4 no-print">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+            <h4 className="font-semibold text-fountain-dark dark:text-white mb-3">Provider coverage summary</h4>
+            <div className="flex flex-wrap gap-4 sm:gap-6">
+              <div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Total states</span>
+                <p className="text-lg font-bold text-fountain-dark dark:text-white">{providerCoverageSummary.totalStates}</p>
+              </div>
+              {SERVICE_TYPES.map((svc) => (
+                <div key={svc}>
+                  <span className="text-sm" style={{ color: SERVICE_INFO[svc].color }}>{svc}</span>
+                  <p className="text-lg font-bold" style={{ color: SERVICE_INFO[svc].color }}>
+                    {providerCoverageSummary.byService[svc] ?? 0}
+                  </p>
+                </div>
+              ))}
+              {providerCoverageSummary.expiredCount > 0 && (
+                <div>
+                  <span className="text-sm text-red-600 dark:text-red-400">Expired</span>
+                  <p className="text-lg font-bold text-red-600 dark:text-red-400">{providerCoverageSummary.expiredCount}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-5xl mx-auto px-2 sm:px-4">
         <div className="overflow-hidden rounded-xl">

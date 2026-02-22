@@ -11,6 +11,7 @@ import {
   ServiceType, 
   SERVICE_INFO, 
   SERVICE_AVAILABILITY,
+  REGIONS,
   isServiceAvailable, 
   getStateName,
   getServicesForState,
@@ -18,35 +19,6 @@ import {
 } from '../data/serviceAvailability';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
-
-// Regional definitions
-const REGIONS: Record<string, { name: string; states: string[]; color: string }> = {
-  west: {
-    name: 'West Coast',
-    states: ['WA', 'OR', 'CA', 'NV', 'AK', 'HI'],
-    color: '#3B82F6',
-  },
-  mountain: {
-    name: 'Mountain',
-    states: ['MT', 'ID', 'WY', 'UT', 'CO', 'AZ', 'NM'],
-    color: '#8B5CF6',
-  },
-  midwest: {
-    name: 'Midwest',
-    states: ['ND', 'SD', 'NE', 'KS', 'MN', 'IA', 'MO', 'WI', 'IL', 'MI', 'IN', 'OH'],
-    color: '#F59E0B',
-  },
-  south: {
-    name: 'South',
-    states: ['TX', 'OK', 'AR', 'LA', 'MS', 'AL', 'TN', 'KY', 'WV', 'VA', 'NC', 'SC', 'GA', 'FL'],
-    color: '#EF4444',
-  },
-  northeast: {
-    name: 'Northeast',
-    states: ['ME', 'NH', 'VT', 'MA', 'RI', 'CT', 'NY', 'NJ', 'PA', 'DE', 'MD', 'DC'],
-    color: '#10B981',
-  },
-};
 
 // State FIPS codes to state abbreviations mapping
 const FIPS_TO_STATE: Record<string, string> = {

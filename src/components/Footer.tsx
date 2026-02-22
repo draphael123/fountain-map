@@ -1,8 +1,35 @@
+import { useState, useEffect } from 'react';
 import { SERVICE_INFO, ServiceType } from '../data/serviceAvailability';
-import { DATA_LAST_UPDATED } from '../data/dataMeta';
+import { DATA_LAST_UPDATED, UPDATE_NOTES } from '../data/dataMeta';
+
+interface UpdateInfo {
+  lastUpdated: string;
+  notes: string[];
+}
 
 export function Footer() {
   const services: ServiceType[] = ['TRT', 'HRT', 'GLP'];
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+
+  useEffect(() => {
+    const fetchUpdateInfo = () => {
+      fetch('/update-info.json')
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (data?.lastUpdated && Array.isArray(data?.notes)) {
+            setUpdateInfo({ lastUpdated: data.lastUpdated, notes: data.notes });
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchUpdateInfo();
+    const interval = setInterval(fetchUpdateInfo, 60000); // Refetch every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const lastUpdated = updateInfo?.lastUpdated ?? DATA_LAST_UPDATED;
+  const notes = updateInfo?.notes ?? UPDATE_NOTES;
 
   return (
     <footer className="bg-fountain-dark text-white mt-auto">
@@ -49,11 +76,21 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Last updated section */}
+        <div className="mt-8 pt-8 border-t border-white/10">
+          <h3 className="text-sm font-semibold text-white mb-2">Website last updated: {lastUpdated}</h3>
+          <ul className="text-gray-400 text-xs space-y-1 mb-6">
+            {notes.map((note, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="text-fountain-trt mt-0.5">•</span>
+                <span>{note}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-8 pt-8 border-t border-white/10 text-center space-y-1">
-          <p className="text-gray-400 text-xs">
-            Data last updated: {DATA_LAST_UPDATED}
-          </p>
+        <div className="pt-6 border-t border-white/10 text-center">
           <p className="text-gray-500 text-xs">
             © {new Date().getFullYear()} Fountain Vitality. All rights reserved.
             Service availability subject to state regulations.
