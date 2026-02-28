@@ -89,30 +89,33 @@ export const US_STATES: StateInfo[] = [
   { id: 'DC', name: 'District of Columbia' },
 ];
 
-// Service availability data extracted from the source spreadsheet
+// Service availability data from Provider Licensing by State (Compliance Dashboard spreadsheet)
 export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
-  // Active: 30 states | Pending: WY, KS, OK, MO, AR, LA, MS, KY, TN, AL, GA, SC, WV, DE, CT, RI, MA, NH, DC, AK, HI
+  // 51 states with at least one TRT-licensed provider
   TRT: [
-    'WA', 'OR', 'CA', 'MT', 'ID', 'NV', 'UT', 'AZ', 'ND', 'SD', 'CO',
-    'NM', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'MI', 'OH',
-    'PA', 'NY', 'VT', 'ME', 'NJ', 'MD', 'VA', 'NC', 'FL'
+    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN',
+    'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ',
+    'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA',
+    'WI', 'WV', 'WY'
   ],
-  
+
   // FountainHRT - Hormone Replacement Therapy (Pink states)
-  // Active: 30 states | Pending: WY, KS, OK, MO, AR, LA, MS, TN, KY, AL, GA, SC, WV, DE, DC, CT, RI, MA, NH, AK, HI
+  // 51 states with at least one HRT-licensed provider
   HRT: [
-    'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'CO', 'AZ', 'NM',
-    'ND', 'SD', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'OH', 'MI',
-    'FL', 'ME', 'VT', 'NY', 'PA', 'NJ', 'MD', 'VA', 'NC'
+    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN',
+    'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ',
+    'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA',
+    'WI', 'WV', 'WY'
   ],
-  
+
   // FountainGLP - GLP-1 Weight Loss (Purple states)
-  // Active: 30 states | Pending: WY, SD, KS, OK, MO, AR, LA, TN, MS, AL, GA, SC, WV, DC, DE, MA, RI, CT, AK, HI
+  // 51 states with at least one GLP-licensed provider
   GLP: [
-    'WA', 'OR', 'CA', 'NV', 'ID', 'MT', 'UT', 'AZ', 'CO', 'NM',
-    'ND', 'NE', 'TX', 'MN', 'IA', 'WI', 'IL', 'IN', 'MI', 'OH',
-    'KY', 'NY', 'PA', 'MD', 'NJ', 'NC', 'FL', 'VT', 'NH', 'ME'
+    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN',
+    'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ',
+    'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA',
+    'WI', 'WV', 'WY'
   ],
 
   // Fountain State Planning (Blue states)
