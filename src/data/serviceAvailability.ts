@@ -89,33 +89,27 @@ export const US_STATES: StateInfo[] = [
   { id: 'DC', name: 'District of Columbia' },
 ];
 
-// Service availability data from Provider Licensing by State (Compliance Dashboard spreadsheet)
+// Service availability data extracted from the source spreadsheet
 export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
-  // 51 states with at least one TRT-licensed provider
+  // 32 states active (added WY, MA to original 30)
   TRT: [
-    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN',
-    'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ',
-    'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA',
-    'WI', 'WV', 'WY'
+    'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'MA', 'MD', 'ME', 'MI', 'MN', 'MT', 'NC', 'ND',
+    'NE', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OR', 'PA', 'SD', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WY'
   ],
 
   // FountainHRT - Hormone Replacement Therapy (Pink states)
-  // 51 states with at least one HRT-licensed provider
+  // 32 states active (added WY, MA to original 30)
   HRT: [
-    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN',
-    'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ',
-    'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA',
-    'WI', 'WV', 'WY'
+    'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'MA', 'MD', 'ME', 'MI', 'MN', 'MT', 'NC', 'ND',
+    'NE', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OR', 'PA', 'SD', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WY'
   ],
 
   // FountainGLP - GLP-1 Weight Loss (Purple states)
-  // 51 states with at least one GLP-licensed provider
+  // 30 states active
   GLP: [
-    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN',
-    'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ',
-    'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA',
-    'WI', 'WV', 'WY'
+    'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'KY', 'MD', 'ME', 'MI', 'MN', 'MT', 'NC', 'ND',
+    'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OR', 'PA', 'TX', 'UT', 'VT', 'WA', 'WI'
   ],
 
   // Fountain State Planning (Blue states)
@@ -124,6 +118,18 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
     'NV', 'WY', 'ND', 'SD', 'MO', 'AR', 'MS', 'WV', 'RI', 'HI'
   ],
 };
+
+// Lab availability restrictions by state
+// States with specific lab requirements (e.g., Quest only, no Labcorp)
+export const LAB_RESTRICTIONS: Record<string, { quest: boolean; labcorp: boolean; note: string }> = {
+  'MD': { quest: true, labcorp: false, note: 'Quest only - Labcorp not available' },
+  'MA': { quest: true, labcorp: false, note: 'Quest only - Labcorp not available' },
+};
+
+// Helper function to get lab restrictions for a state
+export function getLabRestrictions(stateId: string): { quest: boolean; labcorp: boolean; note: string } | null {
+  return LAB_RESTRICTIONS[stateId] || null;
+}
 
 // Service metadata
 export const SERVICE_INFO: Record<ServiceType, { 
@@ -179,4 +185,33 @@ export function getServicesForState(stateId: string): ServiceType[] {
 export function getStateName(stateId: string): string {
   const state = US_STATES.find(s => s.id === stateId);
   return state?.name ?? stateId;
+}
+
+// Colorblind-safe colors (accessible for deuteranopia, protanopia, tritanopia)
+// Using the IBM Design Language colorblind-safe palette
+export const COLORBLIND_COLORS: Record<ServiceType, { color: string; pattern: string }> = {
+  TRT: { color: '#0077BB', pattern: 'diagonal' },      // Blue
+  HRT: { color: '#EE7733', pattern: 'dots' },          // Orange
+  GLP: { color: '#009988', pattern: 'crosshatch' },    // Teal
+  Planning: { color: '#CC3311', pattern: 'horizontal' }, // Red
+};
+
+export const COLORBLIND_INACTIVE = '#BBBBBB';
+
+// Multi-service colorblind colors
+export const COLORBLIND_SERVICE_COUNT_COLORS: Record<number, string> = {
+  0: '#DDDDDD',  // Gray - no services
+  1: '#FFDD00',  // Yellow - 1 service
+  2: '#88CCEE',  // Light blue - 2 services
+  3: '#44AA99',  // Teal - 3 services
+  4: '#117733',  // Green - all 4 services
+};
+
+// Helper to get the appropriate color based on colorblind mode
+export function getServiceColor(service: ServiceType, colorblindMode: boolean): string {
+  return colorblindMode ? COLORBLIND_COLORS[service].color : SERVICE_INFO[service].color;
+}
+
+export function getInactiveColor(colorblindMode: boolean): string {
+  return colorblindMode ? COLORBLIND_INACTIVE : '#D1D5DB';
 }

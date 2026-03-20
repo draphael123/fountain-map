@@ -180,3 +180,18 @@ export function isExpired(date: Date | null): boolean {
   if (!date) return false;
   return date < new Date();
 }
+
+/** Get count of providers licensed in a state */
+export function getProviderCountInState(row: ProviderLicensingRow | undefined): number {
+  if (!row) return 0;
+  return Object.keys(row.providers).length;
+}
+
+/** Build a map of stateId -> provider count from licensing data */
+export function buildProviderCountMap(data: ProviderLicensingData): Record<string, number> {
+  const countMap: Record<string, number> = {};
+  for (const row of data.rows) {
+    countMap[row.stateId] = Object.keys(row.providers).length;
+  }
+  return countMap;
+}

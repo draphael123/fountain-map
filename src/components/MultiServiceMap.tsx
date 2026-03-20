@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -6,12 +6,14 @@ import {
   Marker,
   GeographyObject,
 } from 'react-simple-maps';
-import { 
-  SERVICE_INFO, 
+import {
+  SERVICE_INFO,
   getServicesForState,
   getStateName,
   US_STATES,
+  COLORBLIND_SERVICE_COUNT_COLORS,
 } from '../data/serviceAvailability';
+import { useTheme } from '../context/ThemeContext';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
 
@@ -70,6 +72,18 @@ interface MultiServiceMapProps {
 
 export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 640);
+  const { colorblindMode } = useTheme();
+
+  // Choose color scale based on colorblind mode
+  const colorScale = colorblindMode ? COLORBLIND_SERVICE_COUNT_COLORS : SERVICE_COUNT_COLORS;
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const fn = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', fn);
+    return () => mq.removeEventListener('change', fn);
+  }, []);
 
   const createMouseEnterHandler = useCallback((geo: GeographyObject) => {
     return (event: React.MouseEvent<SVGPathElement>) => {
@@ -116,11 +130,11 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
         </p>
       </div>
 
-      {/* Map */}
-      <div className="w-full max-w-5xl mx-auto px-2 sm:px-4">
+      {/* Map - responsive scale for mobile */}
+      <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 touch-manipulation">
         <ComposableMap
           projection="geoAlbersUsa"
-          projectionConfig={{ scale: 1000 }}
+          projectionConfig={{ scale: isMobile ? 750 : 1000 }}
         >
           <Geographies geography={GEO_URL}>
             {({ geographies }) => (
@@ -133,9 +147,9 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={SERVICE_COUNT_COLORS[serviceCount]}
+                      fill={colorScale[serviceCount]}
                       stroke="#ffffff"
-                      strokeWidth={0.75}
+                      strokeWidth={isMobile ? 1.25 : 0.75}
                       style={{
                         default: { outline: 'none', transition: 'fill 0.3s ease' },
                         hover: { outline: 'none', cursor: 'pointer', filter: 'brightness(1.1)' },
@@ -161,7 +175,7 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
                   textAnchor="middle"
                   style={{
                     fontFamily: 'Outfit, system-ui, sans-serif',
-                    fontSize: 10,
+                    fontSize: isMobile ? 11 : 10,
                     fontWeight: 600,
                     fill: serviceCount >= 3 ? '#1E293B' : '#6B7280',
                     pointerEvents: 'none',
@@ -177,19 +191,32 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
         </ComposableMap>
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-wrap justify-center gap-3 mt-6 px-4">
-        {[0, 1, 2, 3, 4].map(count => (
-          <div key={count} className="flex items-center gap-2">
-            <div 
-              className="w-5 h-5 rounded shadow-sm"
-              style={{ backgroundColor: SERVICE_COUNT_COLORS[count] }}
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              {count} service{count !== 1 ? 's' : ''} ({stats[count as keyof typeof stats]})
-            </span>
+      {/* Legend - improved card */}
+      <div className="mt-6 px-4">
+        <details className="group max-w-2xl mx-auto">
+          <summary className="list-none cursor-pointer">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 py-3 px-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+              {[0, 1, 2, 3, 4].map(count => (
+                <div key={count} className="flex items-center gap-2">
+                  <div 
+                    className="w-5 h-5 rounded shadow-sm"
+                    style={{ backgroundColor: colorScale[count] }}
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {count} ({stats[count as keyof typeof stats]})
+                  </span>
+                </div>
+              ))}
+              <span className="text-xs text-gray-500 dark:text-gray-400 sm:hidden group-open:hidden">Tap for details</span>
+              <svg className="w-4 h-4 text-gray-400 sm:hidden transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </summary>
+          <div className="mt-2 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="mb-1"><strong>Number</strong> = how many Fountain services (TRT, HRT, GLP, Planning) are available in that state. <strong>(N)</strong> = number of states in that category.</p>
           </div>
-        ))}
+        </details>
       </div>
 
       {/* Tooltip */}
@@ -202,7 +229,7 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
             <div className="font-semibold text-base mb-1">{tooltip.stateName}</div>
             <div className="text-xs text-gray-300 mb-2">({tooltip.stateId})</div>
             <div className="text-sm">
-              <span className="font-bold" style={{ color: SERVICE_COUNT_COLORS[tooltip.serviceCount] }}>
+              <span className="font-bold" style={{ color: colorScale[tooltip.serviceCount] }}>
                 {tooltip.serviceCount}
               </span> service{tooltip.serviceCount !== 1 ? 's' : ''} available
             </div>

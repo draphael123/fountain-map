@@ -1,20 +1,21 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
-import { Header } from './components/Header';
+import { Header, type ViewMode } from './components/Header';
 import { ExpansionBanner } from './components/ExpansionBanner';
 import { MultiServiceMap } from './components/MultiServiceMap';
 import { Footer } from './components/Footer';
+import { UpdateBanner } from './components/UpdateBanner';
 import { CheckMyState } from './components/CheckMyState';
 import { MobileStateSelector } from './components/MobileStateSelector';
 import { MapSkeleton } from './components/MapSkeleton';
 import { ProviderAuthorityMap } from './components/ProviderAuthorityMap';
 import { RegionalSummary } from './components/RegionalSummary';
+import { Statistics } from './components/Statistics';
+import { StateComparison } from './components/StateComparison';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
 
 // Lazy load the map for better initial load performance
 const USMap = lazy(() => import('./components/USMap').then(module => ({ default: module.USMap })));
-
-type ViewMode = 'single' | 'multi' | 'provider';
 
 function AppContent() {
   const [selectedService, setSelectedService] = useState<ServiceType>('TRT');
@@ -50,7 +51,7 @@ function AppContent() {
       setSelectedService(serviceParam === 'PLANNING' ? 'Planning' : serviceParam as ServiceType);
     }
     
-    if (viewParam && ['single', 'multi', 'provider'].includes(viewParam)) {
+    if (viewParam && ['single', 'multi', 'provider', 'stats', 'compare'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
     
@@ -98,32 +99,44 @@ function AppContent() {
       <RegionalSummary />
 
       <main className="flex-grow py-8 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto view-transition-container">
           {viewMode === 'single' && (
-            <>
-              
+            <div key="single" className="view-transition-item">
               <MobileStateSelector 
                 selectedService={selectedService}
                 onSelectState={handleCheckState}
               />
-              
-              {/* Map with loading skeleton */}
               <Suspense fallback={<MapSkeleton />}>
                 <USMap 
                   selectedService={selectedService} 
                   onCheckState={handleCheckState}
                 />
               </Suspense>
-              
-            </>
+            </div>
           )}
           
           {viewMode === 'multi' && (
-            <MultiServiceMap onCheckState={handleCheckState} />
+            <div key="multi" className="view-transition-item">
+              <MultiServiceMap onCheckState={handleCheckState} />
+            </div>
+          )}
+
+          {viewMode === 'compare' && (
+            <div key="compare" className="view-transition-item">
+              <StateComparison onCheckState={handleCheckState} />
+            </div>
+          )}
+
+          {viewMode === 'stats' && (
+            <div key="stats" className="view-transition-item">
+              <Statistics />
+            </div>
           )}
 
           {viewMode === 'provider' && (
-            <ProviderAuthorityMap />
+            <div key="provider" className="view-transition-item">
+              <ProviderAuthorityMap />
+            </div>
           )}
         </div>
       </main>
@@ -139,6 +152,9 @@ function AppContent() {
         }}
         preSelectedState={preSelectedState}
       />
+
+      {/* Update notification banner - shows for 24h after an update */}
+      <UpdateBanner />
     </div>
   );
 }

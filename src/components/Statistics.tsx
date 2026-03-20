@@ -47,18 +47,18 @@ export function Statistics() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-fountain-dark dark:text-white">
-          Coverage Statistics
+    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-fountain-dark dark:text-white">
+          Statistics Dashboard
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
           See how Fountain services are expanding across the United States
         </p>
       </div>
 
       {/* Overall Coverage */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="text-3xl font-bold text-fountain-trt">
             {Math.round((stats.statesWithAnyService / stats.totalStates) * 100)}%

@@ -1,5 +1,5 @@
 /** Last date service availability and provider licensing data were updated */
-export const DATA_LAST_UPDATED = '2025-02-21';
+export const DATA_LAST_UPDATED = '2026-03-02';
 
 /** What was updated in this release (shown in footer) */
 export const UPDATE_NOTES: string[] = [

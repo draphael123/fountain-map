@@ -160,3 +160,163 @@ button:focus-visible {
 .animate-shimmer {
   animation: shimmer 3s infinite;
 }
+
+/* View tab transitions */
+.view-transition-container {
+  position: relative;
+  min-height: 12rem;
+}
+
+.view-transition-item {
+  animation: view-fade-slide 0.35s ease-out forwards;
+}
+
+@keyframes view-fade-slide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Service switch transition (single map) */
+.service-switch-transition {
+  transition: color 0.35s ease, background-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  /* Hide interactive elements */
+  .print-hide,
+  button,
+  input,
+  [role="button"],
+  .zoom-controls,
+  footer,
+  nav,
+  .modal,
+  .tooltip,
+  [class*="hover:"],
+  details summary svg {
+    display: none !important;
+  }
+
+  /* Show print-only elements */
+  .print-show {
+    display: block !important;
+  }
+
+  /* Reset colors for print */
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force light backgrounds */
+  .dark,
+  [class*="dark:"] {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Make header simpler for print */
+  header {
+    background: white !important;
+    color: black !important;
+    border-bottom: 2px solid #e5e7eb !important;
+    padding: 0.5rem 1rem !important;
+  }
+
+  header img {
+    filter: brightness(0) !important;
+  }
+
+  /* Optimize map container */
+  .max-w-5xl,
+  .max-w-7xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* Full width map */
+  svg {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Ensure map colors print */
+  .rsm-geography {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page settings */
+  @page {
+    size: landscape;
+    margin: 0.5in;
+  }
+
+  /* Prevent page breaks inside important elements */
+  .view-transition-item,
+  .grid {
+    page-break-inside: avoid;
+  }
+
+  /* Remove shadows and transitions */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Force text colors */
+  h1, h2, h3, h4, h5, h6 {
+    color: black !important;
+  }
+
+  p, span, div {
+    color: #333 !important;
+  }
+
+  /* Keep service colors visible */
+  [style*="color: #2DD4BF"],
+  [style*="color: #EC4899"],
+  [style*="color: #7C6F9B"],
+  [style*="color: #3B82F6"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Legend visibility */
+  .flex.items-center.gap-2 {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide certain sections for cleaner print */
+  .bg-gradient-to-br,
+  .border-t.border-white\/10 {
+    display: none !important;
+  }
+
+  /* Regional summary cards - compact for print */
+  .grid-cols-5 {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+  }
+
+  .grid-cols-5 > div {
+    flex: 0 0 18% !important;
+    padding: 0.25rem !important;
+    font-size: 0.65rem !important;
+  }
+}

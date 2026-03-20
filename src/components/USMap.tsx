@@ -7,16 +7,21 @@ import {
   Annotation,
   GeographyObject,
 } from 'react-simple-maps';
-import { 
-  ServiceType, 
-  SERVICE_INFO, 
+import {
+  ServiceType,
+  SERVICE_INFO,
   SERVICE_AVAILABILITY,
   REGIONS,
-  isServiceAvailable, 
+  isServiceAvailable,
   getStateName,
   getServicesForState,
   US_STATES,
+  getServiceColor,
+  getInactiveColor,
+  COLORBLIND_COLORS,
 } from '../data/serviceAvailability';
+import { loadProviderLicensingData, buildProviderCountMap } from '../data/providerAuthority';
+import { useTheme } from '../context/ThemeContext';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
 
@@ -125,10 +130,28 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
   const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 640);
+  const [providerCounts, setProviderCounts] = useState<Record<string, number>>({});
+  const { colorblindMode } = useTheme();
+
+  // Load provider counts on mount
+  useEffect(() => {
+    loadProviderLicensingData()
+      .then(data => setProviderCounts(buildProviderCountMap(data)))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const fn = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', fn);
+    return () => mq.removeEventListener('change', fn);
+  }, []);
+
   const serviceInfo = SERVICE_INFO[selectedService];
-  const activeColor = serviceInfo.color;
-  const inactiveColor = '#D1D5DB';
+  const activeColor = getServiceColor(selectedService, colorblindMode);
+  const inactiveColor = getInactiveColor(colorblindMode);
+  const patternId = colorblindMode ? `pattern-${COLORBLIND_COLORS[selectedService].pattern}` : null;
 
   // Clear highlight after animation
   useEffect(() => {
@@ -522,9 +545,31 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             <ComposableMap
               projection="geoAlbersUsa"
               projectionConfig={{
-                scale: 1000,
+                scale: isMobile ? 750 : 1000,
               }}
             >
+              {/* Colorblind-friendly patterns */}
+              {colorblindMode && (
+                <defs>
+                  <pattern id="pattern-diagonal" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                    <rect width="8" height="8" fill={activeColor} />
+                    <line x1="0" y1="0" x2="0" y2="8" stroke="white" strokeWidth="2" />
+                  </pattern>
+                  <pattern id="pattern-dots" patternUnits="userSpaceOnUse" width="8" height="8">
+                    <rect width="8" height="8" fill={activeColor} />
+                    <circle cx="4" cy="4" r="2" fill="white" />
+                  </pattern>
+                  <pattern id="pattern-crosshatch" patternUnits="userSpaceOnUse" width="8" height="8">
+                    <rect width="8" height="8" fill={activeColor} />
+                    <line x1="0" y1="0" x2="8" y2="8" stroke="white" strokeWidth="1" />
+                    <line x1="8" y1="0" x2="0" y2="8" stroke="white" strokeWidth="1" />
+                  </pattern>
+                  <pattern id="pattern-horizontal" patternUnits="userSpaceOnUse" width="8" height="8">
+                    <rect width="8" height="8" fill={activeColor} />
+                    <line x1="0" y1="4" x2="8" y2="4" stroke="white" strokeWidth="2" />
+                  </pattern>
+                </defs>
+              )}
           <Geographies geography={GEO_URL}>
             {({ geographies }) => (
               <>
@@ -533,14 +578,24 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                   const stateId = FIPS_TO_STATE[geo.id] || geo.id;
                   const isAvailable = isServiceAvailable(stateId, selectedService);
                   const isHighlighted = highlightedState === stateId;
-                  
+
+                  // Determine fill color/pattern
+                  let stateFill: string;
+                  if (isHighlighted) {
+                    stateFill = '#FBBF24';
+                  } else if (isAvailable && colorblindMode && patternId) {
+                    stateFill = `url(#${patternId})`;
+                  } else {
+                    stateFill = isAvailable ? activeColor : inactiveColor;
+                  }
+
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={isHighlighted ? '#FBBF24' : (isAvailable ? activeColor : inactiveColor)}
+                      fill={stateFill}
                       stroke={isHighlighted ? '#F59E0B' : '#ffffff'}
-                      strokeWidth={isHighlighted ? 2.5 : 0.75}
+                      strokeWidth={isHighlighted ? 2.5 : isMobile ? 1.25 : 0.75}
                       style={{
                         default: {
                           outline: 'none',
@@ -585,7 +640,7 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                   textAnchor="middle"
                   style={{
                     fontFamily: 'Outfit, system-ui, sans-serif',
-                    fontSize: stateId === 'DC' ? 6 : 10,
+                    fontSize: stateId === 'DC' ? (isMobile ? 7 : 6) : (isMobile ? 11 : 10),
                     fontWeight: 600,
                     fill: isAvailable ? '#1E293B' : '#6B7280',
                     pointerEvents: 'none',
@@ -622,7 +677,7 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                   textAnchor="start"
                   style={{
                     fontFamily: 'Outfit, system-ui, sans-serif',
-                    fontSize: 9,
+                    fontSize: isMobile ? 10 : 9,
                     fontWeight: 600,
                     fill: isAvailable ? activeColor : '#9CA3AF',
                     transition: 'fill 0.4s ease',
@@ -639,26 +694,55 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex justify-center gap-6 mt-4 sm:mt-6 flex-wrap px-4">
-        <div className="flex items-center gap-2">
-          <div 
-            className="w-5 h-5 rounded shadow-sm service-bg-transition"
-            style={{ backgroundColor: activeColor }}
-          />
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            {selectedService === 'Planning' ? 'Expanding Soon' : 'Service Available'}
-          </span>
-        </div>
-        {selectedService !== 'Planning' && (
-          <div className="flex items-center gap-2">
-            <div 
-              className="w-5 h-5 rounded shadow-sm"
-              style={{ backgroundColor: inactiveColor }}
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Coming Soon</span>
+      {/* Legend - improved card with descriptions */}
+      <div className="mt-4 sm:mt-6 px-4">
+        <details className="group max-w-2xl mx-auto">
+          <summary className="list-none cursor-pointer">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 py-3 px-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-5 h-5 rounded shadow-sm service-bg-transition"
+                  style={{ backgroundColor: activeColor }}
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {selectedService === 'Planning' ? 'Expanding Soon' : 'Available'}
+                </span>
+              </div>
+              {selectedService !== 'Planning' && (
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-5 h-5 rounded shadow-sm"
+                    style={{ backgroundColor: inactiveColor }}
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Coming Soon</span>
+                </div>
+              )}
+              <span className="text-xs text-gray-500 dark:text-gray-400 sm:hidden group-open:hidden">Tap for details</span>
+              <svg className="w-4 h-4 text-gray-400 sm:hidden transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </summary>
+          <div className="mt-2 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="mb-2">
+              <span className="font-medium text-gray-700 dark:text-gray-300" style={{ color: activeColor }}>
+                {selectedService === 'Planning' ? 'Expanding Soon' : 'Service Available'}
+              </span>
+              {' — '}
+              {selectedService === 'Planning' 
+                ? 'States we are planning to expand to.'
+                : `${serviceInfo.fullName} is available in this state.`
+              }
+            </p>
+            {selectedService !== 'Planning' && (
+              <p>
+                <span className="font-medium text-gray-700 dark:text-gray-300">Coming Soon</span>
+                {' — '}
+                We are working on bringing {serviceInfo.name} to this state.
+              </p>
+            )}
           </div>
-        )}
+        </details>
       </div>
 
       {/* Download CSV Section */}
@@ -830,16 +914,30 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
               {tooltip.isAvailable ? 'Available' : 'Coming Soon'}
             </div>
             
+            {/* Provider count */}
+            {providerCounts[tooltip.stateId] !== undefined && (
+              <div className="mt-2 pt-2 border-t border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span className="text-xs text-gray-300">
+                    <span className="font-semibold text-white">{providerCounts[tooltip.stateId]}</span> providers licensed
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Show other available services */}
             {tooltip.isAvailable && (
               <div className="mt-2 pt-2 border-t border-white/10">
                 <div className="text-xs text-gray-400 mb-1">All services in {tooltip.stateId}:</div>
                 <div className="flex flex-wrap gap-1">
                   {getServicesForState(tooltip.stateId).map(service => (
-                    <span 
+                    <span
                       key={service}
                       className="text-xs px-1.5 py-0.5 rounded"
-                      style={{ 
+                      style={{
                         backgroundColor: `${SERVICE_INFO[service].color}30`,
                         color: SERVICE_INFO[service].color,
                       }}

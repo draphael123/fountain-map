@@ -1,7 +1,10 @@
-import { ServiceType, SERVICE_INFO } from '../data/serviceAvailability';
+import { ServiceType, SERVICE_INFO, getServiceColor } from '../data/serviceAvailability';
 import { ThemeToggle } from './ThemeToggle';
+import { PrintButton } from './PrintButton';
+import { ColorblindToggle } from './ColorblindToggle';
+import { useTheme } from '../context/ThemeContext';
 
-type ViewMode = 'single' | 'multi' | 'provider';
+export type ViewMode = 'single' | 'multi' | 'provider' | 'stats' | 'compare';
 
 interface HeaderProps {
   selectedService: ServiceType;
@@ -13,6 +16,7 @@ interface HeaderProps {
 
 export function Header({ selectedService, onServiceChange, viewMode, onViewModeChange, onSearchClick }: HeaderProps) {
   const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Planning'];
+  const { colorblindMode } = useTheme();
 
   return (
     <header className="bg-fountain-dark text-white">
@@ -42,6 +46,8 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
                   <kbd className="hidden sm:inline px-1.5 py-0.5 text-xs bg-white/10 rounded">/</kbd>
                 </button>
               )}
+              <ColorblindToggle />
+              <PrintButton />
               <ThemeToggle />
             </div>
           </div>
@@ -53,6 +59,8 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
             {[
               { id: 'single', label: 'Service Map', icon: '🗺️' },
               { id: 'multi', label: 'Coverage', icon: '📊' },
+              { id: 'compare', label: 'Compare States', icon: '⚖️' },
+              { id: 'stats', label: 'Statistics', icon: '📈' },
               { id: 'provider', label: 'Provider Authority Map', icon: '👤' },
             ].map(({ id, label, icon }) => (
               <button
@@ -83,30 +91,31 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
                 {services.map((service) => {
                   const info = SERVICE_INFO[service];
+                  const serviceColor = getServiceColor(service, colorblindMode);
                   const isSelected = selectedService === service;
-                  
+
                   return (
                     <button
                       key={service}
                       onClick={() => onServiceChange(service)}
                       className={`
                         group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full
-                        transition-all duration-300 ease-out
-                        ${isSelected 
-                          ? 'bg-white shadow-lg scale-105' 
+                        transition-all duration-300 ease-out service-switch-transition
+                        ${isSelected
+                          ? 'bg-white shadow-lg scale-105'
                           : 'bg-white/10 hover:bg-white/20'
                         }
                       `}
                       style={{
-                        boxShadow: isSelected ? `0 4px 20px ${info.color}40` : undefined,
+                        boxShadow: isSelected ? `0 4px 20px ${serviceColor}40` : undefined,
                       }}
                     >
                       <span className={`
                         font-semibold text-xs sm:text-sm tracking-wide
                         ${isSelected ? 'text-fountain-dark' : 'text-white'}
                       `}>
-                        <span 
-                          style={{ color: info.color }}
+                        <span
+                          style={{ color: serviceColor }}
                           className="font-bold"
                         >
                           {info.name}
