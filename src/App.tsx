@@ -47,8 +47,12 @@ function AppContent() {
     const stateParam = params.get('state')?.toUpperCase();
     const viewParam = params.get('view');
     
-    if (serviceParam && ['TRT', 'HRT', 'GLP', 'PLANNING'].includes(serviceParam)) {
-      setSelectedService(serviceParam === 'PLANNING' ? 'Planning' : serviceParam as ServiceType);
+    if (serviceParam && ['TRT', 'HRT', 'GLP', 'PLANNING', 'SKIN'].includes(serviceParam)) {
+      setSelectedService(
+        serviceParam === 'PLANNING' ? 'Planning' :
+        serviceParam === 'SKIN' ? 'Skin' :
+        serviceParam as ServiceType
+      );
     }
     
     if (viewParam && ['single', 'multi', 'provider', 'stats', 'compare'].includes(viewParam)) {

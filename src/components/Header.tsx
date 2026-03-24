@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 export function Header({ selectedService, onServiceChange, viewMode, onViewModeChange, onSearchClick }: HeaderProps) {
-  const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Planning'];
+  const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Skin', 'Planning'];
   const { colorblindMode } = useTheme();
 
   return (

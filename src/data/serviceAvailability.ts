@@ -1,4 +1,4 @@
-export type ServiceType = 'TRT' | 'HRT' | 'GLP' | 'Planning';
+export type ServiceType = 'TRT' | 'HRT' | 'GLP' | 'Planning' | 'Skin';
 
 /** Regional definitions for coverage summary */
 export const REGIONS: Record<string, { name: string; states: string[]; color: string }> = {
@@ -117,6 +117,13 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   Planning: [
     'NV', 'WY', 'ND', 'SD', 'MO', 'AR', 'MS', 'WV', 'RI', 'HI'
   ],
+
+  // FountainSkin - Skin Care Services (Coral/Peach states)
+  // 21 states active
+  Skin: [
+    'AZ', 'CO', 'ID', 'IN', 'IA', 'ME', 'MD', 'MA', 'NJ', 'NM',
+    'NC', 'ND', 'OR', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WI', 'WY'
+  ],
 };
 
 // Lab availability restrictions by state
@@ -167,6 +174,13 @@ export const SERVICE_INFO: Record<ServiceType, {
     shortDescription: 'Comprehensive state planning',
     longDescription: 'Fountain State Planning offers comprehensive planning services to help you navigate complex decisions. Our expert team provides personalized guidance and support to help you plan for the future, ensuring you have the resources and strategies in place to achieve your goals.',
   },
+  Skin: {
+    name: 'Skin Care',
+    fullName: 'Skin Care Services',
+    color: '#F97316',
+    shortDescription: 'Professional skin care treatments',
+    longDescription: 'FountainSkin provides comprehensive skin care services including medical-grade treatments, anti-aging solutions, and personalized skincare regimens. Our licensed providers offer expert consultations and customized treatment plans to help you achieve healthy, radiant skin.',
+  },
 };
 
 // Helper function to check if a state has a service
@@ -194,6 +208,7 @@ export const COLORBLIND_COLORS: Record<ServiceType, { color: string; pattern: st
   HRT: { color: '#EE7733', pattern: 'dots' },          // Orange
   GLP: { color: '#009988', pattern: 'crosshatch' },    // Teal
   Planning: { color: '#CC3311', pattern: 'horizontal' }, // Red
+  Skin: { color: '#EE3377', pattern: 'vertical' },     // Magenta/Pink
 };
 
 export const COLORBLIND_INACTIVE = '#BBBBBB';
@@ -204,7 +219,8 @@ export const COLORBLIND_SERVICE_COUNT_COLORS: Record<number, string> = {
   1: '#FFDD00',  // Yellow - 1 service
   2: '#88CCEE',  // Light blue - 2 services
   3: '#44AA99',  // Teal - 3 services
-  4: '#117733',  // Green - all 4 services
+  4: '#117733',  // Green - 4 services
+  5: '#004400',  // Dark green - all 5 services
 };
 
 // Helper to get the appropriate color based on colorblind mode

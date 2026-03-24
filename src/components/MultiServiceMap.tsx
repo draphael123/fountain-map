@@ -54,7 +54,8 @@ const SERVICE_COUNT_COLORS: Record<number, string> = {
   1: '#FDE68A', // Yellow - 1 service
   2: '#93C5FD', // Light blue - 2 services
   3: '#86EFAC', // Light green - 3 services
-  4: '#2DD4BF', // Teal - all 4 services
+  4: '#2DD4BF', // Teal - 4 services
+  5: '#059669', // Emerald - all 5 services
 };
 
 interface TooltipInfo {
@@ -110,7 +111,7 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
 
   // Statistics
   const stats = useMemo(() => {
-    const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
+    const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     US_STATES.forEach(state => {
       const count = getServicesForState(state.id).length;
       counts[count as keyof typeof counts]++;
@@ -196,7 +197,7 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
         <details className="group max-w-2xl mx-auto">
           <summary className="list-none cursor-pointer">
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 py-3 px-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-              {[0, 1, 2, 3, 4].map(count => (
+              {[0, 1, 2, 3, 4, 5].map(count => (
                 <div key={count} className="flex items-center gap-2">
                   <div 
                     className="w-5 h-5 rounded shadow-sm"
@@ -214,7 +215,7 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
             </div>
           </summary>
           <div className="mt-2 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            <p className="mb-1"><strong>Number</strong> = how many Fountain services (TRT, HRT, GLP, Planning) are available in that state. <strong>(N)</strong> = number of states in that category.</p>
+            <p className="mb-1"><strong>Number</strong> = how many Fountain services (TRT, HRT, GLP, Skin Care, Planning) are available in that state. <strong>(N)</strong> = number of states in that category.</p>
           </div>
         </details>
       </div>
