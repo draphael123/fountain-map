@@ -5,7 +5,7 @@ interface ServiceQuickLinksProps {
 }
 
 // Service-specific URLs (replace with actual Fountain URLs)
-const SERVICE_URLS: Record<Exclude<ServiceType, 'Planning'>, { learnMore: string; getStarted: string }> = {
+const SERVICE_URLS: Record<Exclude<ServiceType, 'Planning' | 'Skin'>, { learnMore: string; getStarted: string }> = {
   TRT: {
     learnMore: 'https://www.fountaintrt.com',
     getStarted: 'https://www.fountaintrt.com/get-started',
@@ -21,8 +21,8 @@ const SERVICE_URLS: Record<Exclude<ServiceType, 'Planning'>, { learnMore: string
 };
 
 export function ServiceQuickLinks({ selectedService }: ServiceQuickLinksProps) {
-  // Don't show for Planning
-  if (selectedService === 'Planning') return null;
+  // Don't show for Planning or Skin (no URLs configured yet)
+  if (selectedService === 'Planning' || selectedService === 'Skin') return null;
 
   const serviceInfo = SERVICE_INFO[selectedService];
   const urls = SERVICE_URLS[selectedService];
