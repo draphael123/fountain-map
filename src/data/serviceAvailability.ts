@@ -2,8 +2,8 @@ export type ServiceType = 'TRT' | 'HRT' | 'GLP' | 'Planning' | 'Async';
 
 // Async service tier definitions
 export const ASYNC_TIERS = {
-  tier1: ['CA', 'CT', 'FL', 'IN', 'ME', 'MA', 'MI', 'NV', 'NY', 'NC', 'OH', 'PA', 'VA', 'WA', 'WI'],
-  tier2: ['AZ', 'AR', 'CO', 'ID', 'IL', 'IA', 'MD', 'MN', 'MT', 'NE', 'NJ', 'NM', 'ND', 'OK', 'OR', 'SC', 'SD', 'TN', 'TX', 'UT', 'WY'],
+  tier1: ['WA', 'OR', 'CA', 'MT', 'ND', 'MN', 'WI', 'MI', 'NE', 'IA', 'IL', 'IN', 'OH', 'PA', 'NY', 'ME', 'NH', 'MA', 'FL'],
+  tier2: ['ID', 'NV', 'UT', 'WY', 'SD', 'CO', 'NM', 'AZ', 'TX', 'OK', 'KS', 'MO', 'LA', 'AR', 'TN', 'KY', 'WV', 'VA', 'NC', 'SC', 'GA', 'MD', 'DE', 'NJ', 'CT', 'RI', 'DC'],
 };
 
 // Helper to get Async tier for a state
@@ -132,12 +132,12 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   ],
 
   // FountainAsync - Async Services (Green for Tier 1, Yellow for Tier 2)
-  // 36 states active (15 Tier 1 + 21 Tier 2)
+  // 46 states/territories active (19 Tier 1 + 27 Tier 2)
   Async: [
-    // Tier 1 (15 states)
-    'CA', 'CT', 'FL', 'IN', 'ME', 'MA', 'MI', 'NV', 'NY', 'NC', 'OH', 'PA', 'VA', 'WA', 'WI',
-    // Tier 2 (21 states)
-    'AZ', 'AR', 'CO', 'ID', 'IL', 'IA', 'MD', 'MN', 'MT', 'NE', 'NJ', 'NM', 'ND', 'OK', 'OR', 'SC', 'SD', 'TN', 'TX', 'UT', 'WY'
+    // Tier 1 (19 states)
+    'WA', 'OR', 'CA', 'MT', 'ND', 'MN', 'WI', 'MI', 'NE', 'IA', 'IL', 'IN', 'OH', 'PA', 'NY', 'ME', 'NH', 'MA', 'FL',
+    // Tier 2 (27 states/territories)
+    'ID', 'NV', 'UT', 'WY', 'SD', 'CO', 'NM', 'AZ', 'TX', 'OK', 'KS', 'MO', 'LA', 'AR', 'TN', 'KY', 'WV', 'VA', 'NC', 'SC', 'GA', 'MD', 'DE', 'NJ', 'CT', 'RI', 'DC'
   ],
 };
 
