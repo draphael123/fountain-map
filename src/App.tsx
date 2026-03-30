@@ -47,10 +47,10 @@ function AppContent() {
     const stateParam = params.get('state')?.toUpperCase();
     const viewParam = params.get('view');
     
-    if (serviceParam && ['TRT', 'HRT', 'GLP', 'PLANNING', 'SKIN'].includes(serviceParam)) {
+    if (serviceParam && ['TRT', 'HRT', 'GLP', 'PLANNING', 'ASYNC'].includes(serviceParam)) {
       setSelectedService(
         serviceParam === 'PLANNING' ? 'Planning' :
-        serviceParam === 'SKIN' ? 'Skin' :
+        serviceParam === 'ASYNC' ? 'Async' :
         serviceParam as ServiceType
       );
     }

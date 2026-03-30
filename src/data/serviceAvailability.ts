@@ -1,4 +1,17 @@
-export type ServiceType = 'TRT' | 'HRT' | 'GLP' | 'Planning' | 'Skin';
+export type ServiceType = 'TRT' | 'HRT' | 'GLP' | 'Planning' | 'Async';
+
+// Async service tier definitions
+export const ASYNC_TIERS = {
+  tier1: ['CA', 'CT', 'FL', 'IN', 'ME', 'MA', 'MI', 'NV', 'NY', 'NC', 'OH', 'PA', 'VA', 'WA', 'WI'],
+  tier2: ['AZ', 'AR', 'CO', 'ID', 'IL', 'IA', 'MD', 'MN', 'MT', 'NE', 'NJ', 'NM', 'ND', 'OK', 'OR', 'SC', 'SD', 'TN', 'TX', 'UT', 'WY'],
+};
+
+// Helper to get Async tier for a state
+export function getAsyncTier(stateId: string): 'tier1' | 'tier2' | null {
+  if (ASYNC_TIERS.tier1.includes(stateId)) return 'tier1';
+  if (ASYNC_TIERS.tier2.includes(stateId)) return 'tier2';
+  return null;
+}
 
 /** Regional definitions for coverage summary */
 export const REGIONS: Record<string, { name: string; states: string[]; color: string }> = {
@@ -118,11 +131,13 @@ export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
     'NV', 'WY', 'ND', 'SD', 'MO', 'AR', 'MS', 'WV', 'RI', 'HI'
   ],
 
-  // FountainSkin - Skin Care Services (Coral/Peach states)
-  // 21 states active
-  Skin: [
-    'AZ', 'CO', 'ID', 'IN', 'IA', 'ME', 'MD', 'MA', 'NJ', 'NM',
-    'NC', 'ND', 'OR', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WI', 'WY'
+  // FountainAsync - Async Services (Green for Tier 1, Yellow for Tier 2)
+  // 36 states active (15 Tier 1 + 21 Tier 2)
+  Async: [
+    // Tier 1 (15 states)
+    'CA', 'CT', 'FL', 'IN', 'ME', 'MA', 'MI', 'NV', 'NY', 'NC', 'OH', 'PA', 'VA', 'WA', 'WI',
+    // Tier 2 (21 states)
+    'AZ', 'AR', 'CO', 'ID', 'IL', 'IA', 'MD', 'MN', 'MT', 'NE', 'NJ', 'NM', 'ND', 'OK', 'OR', 'SC', 'SD', 'TN', 'TX', 'UT', 'WY'
   ],
 };
 
@@ -139,10 +154,12 @@ export function getLabRestrictions(stateId: string): { quest: boolean; labcorp: 
 }
 
 // Service metadata
-export const SERVICE_INFO: Record<ServiceType, { 
-  name: string; 
-  fullName: string; 
-  color: string; 
+export const SERVICE_INFO: Record<ServiceType, {
+  name: string;
+  fullName: string;
+  color: string;
+  tier1Color?: string;
+  tier2Color?: string;
   shortDescription: string;
   longDescription: string;
 }> = {
@@ -174,12 +191,14 @@ export const SERVICE_INFO: Record<ServiceType, {
     shortDescription: 'Comprehensive state planning',
     longDescription: 'Fountain State Planning offers comprehensive planning services to help you navigate complex decisions. Our expert team provides personalized guidance and support to help you plan for the future, ensuring you have the resources and strategies in place to achieve your goals.',
   },
-  Skin: {
-    name: 'Skin Care',
-    fullName: 'Skin Care Services',
-    color: '#F97316',
-    shortDescription: 'Professional skin care treatments',
-    longDescription: 'FountainSkin provides comprehensive skin care services including medical-grade treatments, anti-aging solutions, and personalized skincare regimens. Our licensed providers offer expert consultations and customized treatment plans to help you achieve healthy, radiant skin.',
+  Async: {
+    name: 'Async',
+    fullName: 'Async Services',
+    color: '#2e7d32', // Tier 1 green (default)
+    tier1Color: '#2e7d32', // Green for Tier 1
+    tier2Color: '#f9e076', // Yellow for Tier 2
+    shortDescription: 'Asynchronous telehealth services',
+    longDescription: 'FountainAsync provides convenient asynchronous telehealth services allowing you to connect with licensed providers on your schedule. Get personalized care and treatment plans through our secure messaging platform without the need for real-time appointments.',
   },
 };
 
@@ -208,7 +227,7 @@ export const COLORBLIND_COLORS: Record<ServiceType, { color: string; pattern: st
   HRT: { color: '#EE7733', pattern: 'dots' },          // Orange
   GLP: { color: '#009988', pattern: 'crosshatch' },    // Teal
   Planning: { color: '#CC3311', pattern: 'horizontal' }, // Red
-  Skin: { color: '#EE3377', pattern: 'vertical' },     // Magenta/Pink
+  Async: { color: '#117733', pattern: 'vertical' },    // Green
 };
 
 export const COLORBLIND_INACTIVE = '#BBBBBB';
@@ -230,4 +249,12 @@ export function getServiceColor(service: ServiceType, colorblindMode: boolean): 
 
 export function getInactiveColor(colorblindMode: boolean): string {
   return colorblindMode ? COLORBLIND_INACTIVE : '#D1D5DB';
+}
+
+// Get the appropriate color for Async service based on tier
+export function getAsyncColorForState(stateId: string): string {
+  const tier = getAsyncTier(stateId);
+  if (tier === 'tier1') return SERVICE_INFO.Async.tier1Color || '#2e7d32';
+  if (tier === 'tier2') return SERVICE_INFO.Async.tier2Color || '#f9e076';
+  return '#D1D5DB'; // inactive
 }

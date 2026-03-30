@@ -19,6 +19,9 @@ import {
   getServiceColor,
   getInactiveColor,
   COLORBLIND_COLORS,
+  getAsyncTier,
+  getAsyncColorForState,
+  ASYNC_TIERS,
 } from '../data/serviceAvailability';
 import { loadProviderLicensingData, buildProviderCountMap } from '../data/providerAuthority';
 import { useTheme } from '../context/ThemeContext';
@@ -578,15 +581,24 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                   const stateId = FIPS_TO_STATE[geo.id] || geo.id;
                   const isAvailable = isServiceAvailable(stateId, selectedService);
                   const isHighlighted = highlightedState === stateId;
+                  const asyncTier = selectedService === 'Async' ? getAsyncTier(stateId) : null;
 
                   // Determine fill color/pattern
                   let stateFill: string;
+                  let hoverFill: string;
                   if (isHighlighted) {
                     stateFill = '#FBBF24';
+                    hoverFill = '#FBBF24';
+                  } else if (selectedService === 'Async' && asyncTier) {
+                    // Use tier-specific colors for Async
+                    stateFill = getAsyncColorForState(stateId);
+                    hoverFill = stateFill;
                   } else if (isAvailable && colorblindMode && patternId) {
                     stateFill = `url(#${patternId})`;
+                    hoverFill = activeColor;
                   } else {
                     stateFill = isAvailable ? activeColor : inactiveColor;
+                    hoverFill = isAvailable ? activeColor : '#9CA3AF';
                   }
 
                   return (
@@ -603,13 +615,13 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
                           filter: isHighlighted ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.9))' : 'none',
                         },
                         hover: {
-                          fill: isAvailable ? activeColor : '#9CA3AF',
+                          fill: hoverFill,
                           outline: 'none',
                           cursor: 'pointer',
                           filter: 'brightness(1.15)',
                         },
                         pressed: {
-                          fill: isAvailable ? activeColor : '#9CA3AF',
+                          fill: hoverFill,
                           outline: 'none',
                         },
                       }}
@@ -699,23 +711,55 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
         <details className="group max-w-2xl mx-auto">
           <summary className="list-none cursor-pointer">
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 py-3 px-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-5 h-5 rounded shadow-sm service-bg-transition"
-                  style={{ backgroundColor: activeColor }}
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {selectedService === 'Planning' ? 'Expanding Soon' : 'Available'}
-                </span>
-              </div>
-              {selectedService !== 'Planning' && (
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-5 h-5 rounded shadow-sm"
-                    style={{ backgroundColor: inactiveColor }}
-                  />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Coming Soon</span>
-                </div>
+              {selectedService === 'Async' ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded shadow-sm"
+                      style={{ backgroundColor: SERVICE_INFO.Async.tier1Color }}
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Tier 1 ({ASYNC_TIERS.tier1.length})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded shadow-sm"
+                      style={{ backgroundColor: SERVICE_INFO.Async.tier2Color }}
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Tier 2 ({ASYNC_TIERS.tier2.length})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded shadow-sm"
+                      style={{ backgroundColor: inactiveColor }}
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Not Available</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded shadow-sm service-bg-transition"
+                      style={{ backgroundColor: activeColor }}
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {selectedService === 'Planning' ? 'Expanding Soon' : 'Available'}
+                    </span>
+                  </div>
+                  {selectedService !== 'Planning' && (
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-5 h-5 rounded shadow-sm"
+                        style={{ backgroundColor: inactiveColor }}
+                      />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Coming Soon</span>
+                    </div>
+                  )}
+                </>
               )}
               <span className="text-xs text-gray-500 dark:text-gray-400 sm:hidden group-open:hidden">Tap for details</span>
               <svg className="w-4 h-4 text-gray-400 sm:hidden transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -724,22 +768,41 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             </div>
           </summary>
           <div className="mt-2 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            <p className="mb-2">
-              <span className="font-medium text-gray-700 dark:text-gray-300" style={{ color: activeColor }}>
-                {selectedService === 'Planning' ? 'Expanding Soon' : 'Service Available'}
-              </span>
-              {' — '}
-              {selectedService === 'Planning' 
-                ? 'States we are planning to expand to.'
-                : `${serviceInfo.fullName} is available in this state.`
-              }
-            </p>
-            {selectedService !== 'Planning' && (
-              <p>
-                <span className="font-medium text-gray-700 dark:text-gray-300">Coming Soon</span>
-                {' — '}
-                We are working on bringing {serviceInfo.name} to this state.
-              </p>
+            {selectedService === 'Async' ? (
+              <>
+                <p className="mb-2">
+                  <span className="font-medium" style={{ color: SERVICE_INFO.Async.tier1Color }}>Tier 1</span>
+                  {' — '}Full Async services available with priority support.
+                </p>
+                <p className="mb-2">
+                  <span className="font-medium" style={{ color: '#c9a227' }}>Tier 2</span>
+                  {' — '}Async services available with standard support.
+                </p>
+                <p>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Not Available</span>
+                  {' — '}We are working on expanding to this state.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mb-2">
+                  <span className="font-medium text-gray-700 dark:text-gray-300" style={{ color: activeColor }}>
+                    {selectedService === 'Planning' ? 'Expanding Soon' : 'Service Available'}
+                  </span>
+                  {' — '}
+                  {selectedService === 'Planning'
+                    ? 'States we are planning to expand to.'
+                    : `${serviceInfo.fullName} is available in this state.`
+                  }
+                </p>
+                {selectedService !== 'Planning' && (
+                  <p>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Coming Soon</span>
+                    {' — '}
+                    We are working on bringing {serviceInfo.name} to this state.
+                  </p>
+                )}
+              </>
             )}
           </div>
         </details>

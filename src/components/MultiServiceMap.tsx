@@ -215,7 +215,7 @@ export function MultiServiceMap({ onCheckState }: MultiServiceMapProps) {
             </div>
           </summary>
           <div className="mt-2 py-3 px-4 rounded-xl bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            <p className="mb-1"><strong>Number</strong> = how many Fountain services (TRT, HRT, GLP, Skin Care, Planning) are available in that state. <strong>(N)</strong> = number of states in that category.</p>
+            <p className="mb-1"><strong>Number</strong> = how many Fountain services (TRT, HRT, GLP, Async, Planning) are available in that state. <strong>(N)</strong> = number of states in that category.</p>
           </div>
         </details>
       </div>
