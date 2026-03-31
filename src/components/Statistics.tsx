@@ -1,17 +1,19 @@
 import { useMemo } from 'react';
-import { 
-  SERVICE_INFO, 
-  SERVICE_AVAILABILITY, 
+import {
+  SERVICE_INFO,
+  SERVICE_AVAILABILITY,
   ServiceType,
   US_STATES,
   getServicesForState,
+  ASYNC_TIERS,
 } from '../data/serviceAvailability';
 
 export function Statistics() {
   const stats = useMemo(() => {
-    const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Planning'];
+    // Services to display (excluding Planning, including Async)
+    const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Async'];
     const totalStates = US_STATES.length;
-    
+
     // Calculate coverage for each service
     const serviceCoverage = services.map(service => ({
       service,
@@ -20,22 +22,33 @@ export function Statistics() {
       percentage: Math.round((SERVICE_AVAILABILITY[service].length / totalStates) * 100),
     }));
 
-    // Calculate states by number of services
+    // Calculate states by number of services (excluding Planning from count)
     const statesByServiceCount = US_STATES.reduce((acc, state) => {
-      const serviceCount = getServicesForState(state.id).length;
+      const allServices = getServicesForState(state.id);
+      // Count only TRT, HRT, GLP, Async (exclude Planning)
+      const serviceCount = allServices.filter(s => s !== 'Planning').length;
       acc[serviceCount] = (acc[serviceCount] || 0) + 1;
       return acc;
     }, {} as Record<number, number>);
 
-    // States with at least one service
-    const statesWithAnyService = US_STATES.filter(
-      state => getServicesForState(state.id).length > 0
-    ).length;
+    // States with at least one service (excluding Planning)
+    const statesWithAnyService = US_STATES.filter(state => {
+      const services = getServicesForState(state.id).filter(s => s !== 'Planning');
+      return services.length > 0;
+    }).length;
 
-    // States with all services
-    const statesWithAllServices = US_STATES.filter(
-      state => getServicesForState(state.id).length === 4
-    ).length;
+    // States with all 4 services (TRT, HRT, GLP, Async)
+    const statesWithAllServices = US_STATES.filter(state => {
+      const services = getServicesForState(state.id).filter(s => s !== 'Planning');
+      return services.length === 4;
+    }).length;
+
+    // Async tier stats
+    const asyncTierStats = {
+      tier1: ASYNC_TIERS.tier1.length,
+      tier2: ASYNC_TIERS.tier2.length,
+      total: SERVICE_AVAILABILITY.Async.length,
+    };
 
     return {
       serviceCoverage,
@@ -43,6 +56,7 @@ export function Statistics() {
       statesWithAnyService,
       statesWithAllServices,
       totalStates,
+      asyncTierStats,
     };
   }, []);
 
@@ -99,15 +113,50 @@ export function Statistics() {
                   {count} states ({percentage}%)
                 </span>
               </div>
-              <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{ 
-                    width: `${percentage}%`,
-                    backgroundColor: info.color,
-                  }}
-                />
-              </div>
+              {service === 'Async' ? (
+                // Special bar for Async showing Tier 1 and Tier 2
+                <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
+                  <div
+                    className="h-full transition-all duration-500"
+                    style={{
+                      width: `${Math.round((stats.asyncTierStats.tier1 / stats.totalStates) * 100)}%`,
+                      backgroundColor: SERVICE_INFO.Async.tier1Color,
+                    }}
+                    title={`Tier 1: ${stats.asyncTierStats.tier1} states`}
+                  />
+                  <div
+                    className="h-full transition-all duration-500"
+                    style={{
+                      width: `${Math.round((stats.asyncTierStats.tier2 / stats.totalStates) * 100)}%`,
+                      backgroundColor: SERVICE_INFO.Async.tier2Color,
+                    }}
+                    title={`Tier 2: ${stats.asyncTierStats.tier2} states`}
+                  />
+                </div>
+              ) : (
+                <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${percentage}%`,
+                      backgroundColor: info.color,
+                    }}
+                  />
+                </div>
+              )}
+              {/* Async tier breakdown labels */}
+              {service === 'Async' && (
+                <div className="flex items-center gap-4 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SERVICE_INFO.Async.tier1Color }} />
+                    Tier 1: {stats.asyncTierStats.tier1}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SERVICE_INFO.Async.tier2Color }} />
+                    Tier 2: {stats.asyncTierStats.tier2}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
