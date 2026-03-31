@@ -830,8 +830,8 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
         </button>
       </div>
 
-      {/* Service Description Section - Hide for Planning */}
-      {selectedService !== 'Planning' && (
+      {/* Service Description Section - Hide for Planning and Async */}
+      {selectedService !== 'Planning' && selectedService !== 'Async' && (
         <div className="max-w-3xl mx-auto mt-8 sm:mt-12 px-4">
           <div 
             className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 sm:p-8 shadow-sm service-border-transition"
