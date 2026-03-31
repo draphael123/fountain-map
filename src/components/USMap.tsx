@@ -874,7 +874,7 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {selectedService === 'Async'
-                ? `Use Ctrl+F (Cmd+F on Mac) to quickly find your state • ${ASYNC_TIERS.tier1.length} Tier 1 • ${ASYNC_TIERS.tier2.length} Tier 2 • ${inactiveStates.length} coming soon`
+                ? `Use Ctrl+F (Cmd+F on Mac) to quickly find your state`
                 : selectedService === 'Planning'
                   ? `Use Ctrl+F (Cmd+F on Mac) to quickly find your state • ${activeStates.length} states`
                   : `Use Ctrl+F (Cmd+F on Mac) to quickly find your state • ${activeStates.length} available • ${inactiveStates.length} coming soon`
@@ -882,94 +882,132 @@ export function USMap({ selectedService, onCheckState }: USMapProps) {
             </p>
           </div>
 
-          {/* Async Service - 3 column layout for Tier 1, Tier 2, Coming Soon */}
+          {/* Async Service - Summary Stats Bar + Collapsible Sections */}
           {selectedService === 'Async' ? (
-            <div className="grid md:grid-cols-3 gap-0">
-              {/* Tier 1 States */}
-              <div className="p-4 md:border-r border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: SERVICE_INFO.Async.tier1Color }}
-                  />
-                  <span className="font-bold text-sm" style={{ color: SERVICE_INFO.Async.tier1Color }}>
-                    Tier 1 ({ASYNC_TIERS.tier1.length})
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {ASYNC_TIERS.tier1.map(stateId => (
-                    <div
-                      key={stateId}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                      onClick={() => onCheckState(stateId)}
-                    >
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{getStateName(stateId)}</span>
-                      <span
-                        className="text-xs font-bold px-2 py-0.5 rounded"
-                        style={{ backgroundColor: `${SERVICE_INFO.Async.tier1Color}15`, color: SERVICE_INFO.Async.tier1Color }}
-                      >
-                        {stateId}
-                      </span>
-                    </div>
-                  ))}
+            <div>
+              {/* Summary Stats Bar */}
+              <div className="px-4 py-3 bg-gradient-to-r from-green-50 via-yellow-50 to-gray-50 dark:from-green-900/20 dark:via-yellow-900/20 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-700 dark:text-gray-200">
+                      {ASYNC_TIERS.tier1.length + ASYNC_TIERS.tier2.length} Active
+                    </span>
+                    <span className="text-gray-400">
+                      ({ASYNC_TIERS.tier1.length} Tier 1 + {ASYNC_TIERS.tier2.length} Tier 2)
+                    </span>
+                  </div>
+                  <span className="text-gray-300 dark:text-gray-600">•</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 dark:text-gray-400">
+                      {inactiveStates.length} Coming Soon
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Tier 2 States */}
-              <div className="p-4 md:border-r border-gray-100 dark:border-gray-700 bg-yellow-50/30 dark:bg-yellow-900/10">
-                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: SERVICE_INFO.Async.tier2Color }}
-                  />
-                  <span className="font-bold text-sm" style={{ color: '#c9a227' }}>
-                    Tier 2 ({ASYNC_TIERS.tier2.length})
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {ASYNC_TIERS.tier2.map(stateId => (
-                    <div
-                      key={stateId}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-yellow-100/50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                      onClick={() => onCheckState(stateId)}
-                    >
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{getStateName(stateId)}</span>
+              {/* Collapsible Sections - Stack on mobile, 3 cols on desktop */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                {/* Tier 1 States - Collapsible */}
+                <details className="group md:border-r border-gray-100 dark:border-gray-700" open>
+                  <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors list-none">
+                    <div className="flex items-center gap-2">
                       <span
-                        className="text-xs font-bold px-2 py-0.5 rounded"
-                        style={{ backgroundColor: `${SERVICE_INFO.Async.tier2Color}40`, color: '#997a1d' }}
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: SERVICE_INFO.Async.tier1Color }}
+                      />
+                      <span className="font-bold text-sm" style={{ color: SERVICE_INFO.Async.tier1Color }}>
+                        Tier 1 ({ASYNC_TIERS.tier1.length})
+                      </span>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="px-4 pb-4 space-y-1">
+                    {[...ASYNC_TIERS.tier1].sort((a, b) => getStateName(a).localeCompare(getStateName(b))).map(stateId => (
+                      <div
+                        key={stateId}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        onClick={() => onCheckState(stateId)}
                       >
-                        {stateId}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{getStateName(stateId)}</span>
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded"
+                          style={{ backgroundColor: `${SERVICE_INFO.Async.tier1Color}15`, color: SERVICE_INFO.Async.tier1Color }}
+                        >
+                          {stateId}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
 
-              {/* Coming Soon States */}
-              <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50">
-                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: inactiveColor }}
-                  />
-                  <span className="font-bold text-sm text-gray-500">
-                    Coming Soon ({inactiveStates.length})
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {inactiveStates.map(state => (
-                    <div
-                      key={state.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                      onClick={() => onCheckState(state.id)}
-                    >
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{state.name}</span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                        {state.id}
+                {/* Tier 2 States - Collapsible */}
+                <details className="group md:border-r border-gray-100 dark:border-gray-700 bg-yellow-50/30 dark:bg-yellow-900/10" open>
+                  <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-gray-700/50 transition-colors list-none">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: SERVICE_INFO.Async.tier2Color }}
+                      />
+                      <span className="font-bold text-sm" style={{ color: '#c9a227' }}>
+                        Tier 2 ({ASYNC_TIERS.tier2.length})
                       </span>
                     </div>
-                  ))}
-                </div>
+                    <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="px-4 pb-4 space-y-1">
+                    {[...ASYNC_TIERS.tier2].sort((a, b) => getStateName(a).localeCompare(getStateName(b))).map(stateId => (
+                      <div
+                        key={stateId}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-yellow-100/50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        onClick={() => onCheckState(stateId)}
+                      >
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{getStateName(stateId)}</span>
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded"
+                          style={{ backgroundColor: `${SERVICE_INFO.Async.tier2Color}40`, color: '#997a1d' }}
+                        >
+                          {stateId}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+
+                {/* Coming Soon States - Collapsible */}
+                <details className="group bg-gray-50/50 dark:bg-gray-900/50" open>
+                  <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors list-none">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: inactiveColor }}
+                      />
+                      <span className="font-bold text-sm text-gray-500">
+                        Coming Soon ({inactiveStates.length})
+                      </span>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="px-4 pb-4 space-y-1">
+                    {[...inactiveStates].sort((a, b) => a.name.localeCompare(b.name)).map(state => (
+                      <div
+                        key={state.id}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        onClick={() => onCheckState(state.id)}
+                      >
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{state.name}</span>
+                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                          {state.id}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
               </div>
             </div>
           ) : (
