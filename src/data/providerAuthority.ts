@@ -76,7 +76,8 @@ function parseServiceString(s: string): string[] {
   return s
     .split(/[\/\s,]+/)
     .map((x) => x.trim().toUpperCase())
-    .filter((x) => ['TRT', 'HRT', 'GLP'].includes(x));
+    .map((x) => (x === 'ASYNC' ? 'Async' : x))
+    .filter((x) => ['TRT', 'HRT', 'GLP', 'Async'].includes(x));
 }
 
 export interface ProviderLicensingData {
@@ -106,12 +107,12 @@ export async function loadProviderLicensingData(): Promise<ProviderLicensingData
 
   const hasServiceRow =
     rows.length > 1 && rows[1] && (!rows[1][0]?.trim() || rows[1][0] === 'State') &&
-    rows[1].some((cell) => /\b(TRT|HRT|GLP)\b/i.test(cell ?? ''));
+    rows[1].some((cell) => /\b(TRT|HRT|GLP|ASYNC)\b/i.test(cell ?? ''));
   const serviceRow = hasServiceRow ? rows[1] : null;
   const dataStartRow = hasServiceRow ? 2 : 1;
 
   const providerToServices: Record<string, string[]> = {};
-  const providersByService: Record<string, string[]> = { TRT: [], HRT: [], GLP: [] };
+  const providersByService: Record<string, string[]> = { TRT: [], HRT: [], GLP: [], Async: [] };
   if (serviceRow) {
     providerIndices.forEach(({ index, name }) => {
       const svcStr = serviceRow[index]?.trim() ?? '';

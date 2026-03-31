@@ -58,7 +58,7 @@ const SMALL_STATES: Record<string, { dx: number; dy: number }> = {
 const ACTIVE_COLOR = '#0D9488';
 const INACTIVE_COLOR = '#D1D5DB';
 
-const SERVICE_TYPES: ServiceType[] = ['TRT', 'HRT', 'GLP'];
+const SERVICE_TYPES: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Async'];
 
 interface TooltipState {
   x: number;
