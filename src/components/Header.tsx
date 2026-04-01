@@ -53,32 +53,38 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
           </div>
         </div>
 
-        {/* View Mode Tabs */}
+        {/* View Mode Tabs - Scrollable on mobile */}
         <div className="py-3 border-b border-white/10">
-          <div className="flex justify-center gap-1 sm:gap-2">
-            {[
-              { id: 'single', label: 'Service Map', icon: '🗺️' },
-              { id: 'multi', label: 'Coverage', icon: '📊' },
-              { id: 'compare', label: 'Compare States', icon: '⚖️' },
-              { id: 'stats', label: 'Statistics', icon: '📈' },
-              { id: 'provider', label: 'Provider Authority Map', icon: '👤' },
-              { id: 'licensing', label: 'Licensing', icon: '📋' },
-            ].map(({ id, label, icon }) => (
-              <button
-                key={id}
-                onClick={() => onViewModeChange(id as ViewMode)}
-                className={`
-                  px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all
-                  ${viewMode === id 
-                    ? 'bg-white text-fountain-dark' 
-                    : 'text-gray-300 hover:bg-white/10'
-                  }
-                `}
-              >
-                <span className="hidden sm:inline">{icon} </span>
-                {label}
-              </button>
-            ))}
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex justify-start sm:justify-center gap-1 sm:gap-2 min-w-max sm:min-w-0">
+              {[
+                { id: 'single', label: 'Service Map', shortLabel: 'Services', icon: '🗺️' },
+                { id: 'multi', label: 'Coverage', shortLabel: 'Coverage', icon: '📊' },
+                { id: 'compare', label: 'Compare States', shortLabel: 'Compare', icon: '⚖️' },
+                { id: 'stats', label: 'Statistics', shortLabel: 'Stats', icon: '📈' },
+                { id: 'provider', label: 'Provider Authority Map', shortLabel: 'Providers', icon: '👤' },
+                { id: 'licensing', label: 'Licensing', shortLabel: 'Licensing', icon: '📋' },
+              ].map(({ id, label, shortLabel, icon }) => (
+                <button
+                  key={id}
+                  onClick={() => onViewModeChange(id as ViewMode)}
+                  className={`
+                    px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-shrink-0
+                    ${viewMode === id
+                      ? 'bg-white text-fountain-dark'
+                      : 'text-gray-300 hover:bg-white/10'
+                    }
+                  `}
+                >
+                  <span className="sm:hidden">{icon} {shortLabel}</span>
+                  <span className="hidden sm:inline">{icon} {label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Scroll hint for mobile */}
+          <div className="sm:hidden text-center mt-1">
+            <span className="text-xs text-gray-500">Swipe for more options →</span>
           </div>
         </div>
 

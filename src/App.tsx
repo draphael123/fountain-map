@@ -11,7 +11,7 @@ import { ProviderAuthorityMap } from './components/ProviderAuthorityMap';
 import { RegionalSummary } from './components/RegionalSummary';
 import { Statistics } from './components/Statistics';
 import { StateComparison } from './components/StateComparison';
-import { Licensing } from './components/Licensing';
+import { Licensing, type LicensingMapType, LICENSING_MAPS } from './components/Licensing';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
 
@@ -23,6 +23,7 @@ function AppContent() {
   const [checkMyStateOpen, setCheckMyStateOpen] = useState(false);
   const [preSelectedState, setPreSelectedState] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('single');
+  const [licensingMap, setLicensingMap] = useState<LicensingMapType>('csr');
 
   // Keyboard shortcut: / opens Check My State (when not in an input)
   useEffect(() => {
@@ -47,7 +48,8 @@ function AppContent() {
     const serviceParam = params.get('service')?.toUpperCase();
     const stateParam = params.get('state')?.toUpperCase();
     const viewParam = params.get('view');
-    
+    const mapParam = params.get('map')?.toLowerCase();
+
     if (serviceParam && ['TRT', 'HRT', 'GLP', 'PLANNING', 'ASYNC'].includes(serviceParam)) {
       setSelectedService(
         serviceParam === 'PLANNING' ? 'Planning' :
@@ -55,11 +57,16 @@ function AppContent() {
         serviceParam as ServiceType
       );
     }
-    
+
     if (viewParam && ['single', 'multi', 'provider', 'stats', 'compare', 'licensing'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
-    
+
+    // Handle licensing map parameter
+    if (mapParam && LICENSING_MAPS.some(m => m.id === mapParam)) {
+      setLicensingMap(mapParam as LicensingMapType);
+    }
+
     if (stateParam) {
       setPreSelectedState(stateParam);
       setCheckMyStateOpen(true);
@@ -78,6 +85,17 @@ function AppContent() {
     setViewMode(mode);
     const url = new URL(window.location.href);
     url.searchParams.set('view', mode);
+    // Clear map param when leaving licensing view
+    if (mode !== 'licensing') {
+      url.searchParams.delete('map');
+    }
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const handleLicensingMapChange = (map: LicensingMapType) => {
+    setLicensingMap(map);
+    const url = new URL(window.location.href);
+    url.searchParams.set('map', map);
     window.history.replaceState({}, '', url.toString());
   };
 
@@ -146,7 +164,10 @@ function AppContent() {
 
           {viewMode === 'licensing' && (
             <div key="licensing" className="view-transition-item">
-              <Licensing />
+              <Licensing
+                initialMap={licensingMap}
+                onMapChange={handleLicensingMapChange}
+              />
             </div>
           )}
         </div>

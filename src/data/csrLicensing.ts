@@ -108,3 +108,55 @@ export function getCategoriesForState(stateId: string): CSRCategory[] {
   }
   return categories;
 }
+
+// Provider type filter - normalized to handle MD/MDs and NP/NPs
+export type ProviderTypeFilter = 'all' | 'md' | 'np';
+
+// Colors for provider types
+export const PROVIDER_TYPE_COLORS = {
+  md: '#8B5CF6',  // Purple for MDs
+  np: '#10B981',  // Green for NPs
+};
+
+// Check if a provider type matches the filter (MD/MDs match 'md', NP/NPs match 'np')
+export function matchesProviderTypeFilter(providerType: ProviderType, filter: ProviderTypeFilter): boolean {
+  if (filter === 'all') return true;
+  const normalized = providerType.toLowerCase().replace('s', '');
+  return normalized === filter;
+}
+
+// Get all states that require a specific provider type (across all categories)
+export function getStatesByProviderType(filter: ProviderTypeFilter): { stateId: string; category: CSRCategory; providerType: ProviderType }[] {
+  const results: { stateId: string; category: CSRCategory; providerType: ProviderType }[] = [];
+
+  CSR_DATA.controlled.forEach(({ stateId, providerType }) => {
+    if (matchesProviderTypeFilter(providerType, filter)) {
+      results.push({ stateId, category: 'controlled', providerType });
+    }
+  });
+
+  CSR_DATA.nonControlled.forEach(({ stateId, providerType }) => {
+    if (matchesProviderTypeFilter(providerType, filter)) {
+      results.push({ stateId, category: 'nonControlled', providerType });
+    }
+  });
+
+  return results;
+}
+
+// Count states by provider type
+export function countStatesByProviderType(): { md: number; np: number } {
+  const mdStates = new Set<string>();
+  const npStates = new Set<string>();
+
+  [...CSR_DATA.controlled, ...CSR_DATA.nonControlled].forEach(({ stateId, providerType }) => {
+    if (matchesProviderTypeFilter(providerType, 'md')) {
+      mdStates.add(stateId);
+    }
+    if (matchesProviderTypeFilter(providerType, 'np')) {
+      npStates.add(stateId);
+    }
+  });
+
+  return { md: mdStates.size, np: npStates.size };
+}

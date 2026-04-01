@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CSRMap } from './CSRMap';
 
-type LicensingMapType = 'csr';
+export type LicensingMapType = 'csr';
 
 interface MapInfo {
   id: LicensingMapType;
@@ -9,7 +9,7 @@ interface MapInfo {
   description: string;
 }
 
-const LICENSING_MAPS: MapInfo[] = [
+export const LICENSING_MAPS: MapInfo[] = [
   {
     id: 'csr',
     name: 'CSR',
@@ -18,8 +18,26 @@ const LICENSING_MAPS: MapInfo[] = [
   // Add more maps here as needed
 ];
 
-export function Licensing() {
-  const [activeMap, setActiveMap] = useState<LicensingMapType>('csr');
+interface LicensingProps {
+  initialMap?: LicensingMapType;
+  onMapChange?: (map: LicensingMapType) => void;
+}
+
+export function Licensing({ initialMap, onMapChange }: LicensingProps) {
+  const [activeMap, setActiveMap] = useState<LicensingMapType>(initialMap || 'csr');
+
+  // Sync with initial map prop
+  useEffect(() => {
+    if (initialMap && initialMap !== activeMap) {
+      setActiveMap(initialMap);
+    }
+  }, [initialMap]);
+
+  // Handle map change
+  const handleMapChange = (map: LicensingMapType) => {
+    setActiveMap(map);
+    onMapChange?.(map);
+  };
 
   return (
     <div className="w-full px-4">
@@ -39,7 +57,7 @@ export function Licensing() {
           {LICENSING_MAPS.map(map => (
             <button
               key={map.id}
-              onClick={() => setActiveMap(map.id)}
+              onClick={() => handleMapChange(map.id)}
               className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all ${
                 activeMap === map.id
                   ? 'bg-fountain-dark text-white shadow-lg'
