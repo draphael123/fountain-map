@@ -11,6 +11,7 @@ import { ProviderAuthorityMap } from './components/ProviderAuthorityMap';
 import { RegionalSummary } from './components/RegionalSummary';
 import { Statistics } from './components/Statistics';
 import { StateComparison } from './components/StateComparison';
+import { Licensing } from './components/Licensing';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
 
@@ -55,7 +56,7 @@ function AppContent() {
       );
     }
     
-    if (viewParam && ['single', 'multi', 'provider', 'stats', 'compare'].includes(viewParam)) {
+    if (viewParam && ['single', 'multi', 'provider', 'stats', 'compare', 'licensing'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
     
@@ -140,6 +141,12 @@ function AppContent() {
           {viewMode === 'provider' && (
             <div key="provider" className="view-transition-item">
               <ProviderAuthorityMap />
+            </div>
+          )}
+
+          {viewMode === 'licensing' && (
+            <div key="licensing" className="view-transition-item">
+              <Licensing />
             </div>
           )}
         </div>
