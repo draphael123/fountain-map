@@ -1,7 +1,7 @@
 import { REGIONS, SERVICE_AVAILABILITY, SERVICE_INFO } from '../data/serviceAvailability';
 import type { ServiceType } from '../data/serviceAvailability';
 
-const SERVICES: ServiceType[] = ['TRT', 'HRT', 'GLP'];
+const SERVICES: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Async'];
 
 function isServiceAvailable(stateId: string, service: ServiceType): boolean {
   return SERVICE_AVAILABILITY[service].includes(stateId);
