@@ -92,7 +92,7 @@ export const CSR_COLORS = {
   controlled: '#22C55E',      // Green - CSR Required
   nonControlled: '#9CA3AF',   // Gray - No CSR Needed
   tbd: '#EAB308',             // Yellow - Pending Determination
-  active: '#FFFFFF',          // White - Active state with existing CSR tracking
+  active: '#60A5FA',          // Light Blue - Active state with existing CSR tracking
   inactive: '#E5E7EB',        // Light Gray - Not in any category
 };
 

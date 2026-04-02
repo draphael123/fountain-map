@@ -699,14 +699,14 @@ export function CSRMap() {
               </div>
             </div>
 
-            {/* Active States - WHITE */}
-            <div className="p-4 bg-white dark:bg-gray-800">
+            {/* Active States - LIGHT BLUE */}
+            <div className="p-4 bg-blue-50/30 dark:bg-blue-900/10">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
                 <span
-                  className="w-3 h-3 rounded-full border border-gray-300"
+                  className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: CSR_COLORS.active }}
                 />
-                <span className="font-bold text-sm text-gray-700 dark:text-gray-300">
+                <span className="font-bold text-sm" style={{ color: CSR_COLORS.active }}>
                   Active ({stats.active})
                 </span>
               </div>
@@ -714,7 +714,7 @@ export function CSRMap() {
                 {CSR_DATA.active.map(({ stateId, licenseRequirement, notes }) => (
                   <div
                     key={stateId}
-                    className="px-3 py-2 rounded-lg bg-white dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600"
+                    className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
