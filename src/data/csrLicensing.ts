@@ -3,45 +3,58 @@
 
 export type CSRCategory = 'controlled' | 'nonControlled' | 'tbd';
 export type ProviderType = 'MD' | 'NP' | 'MDs' | 'NPs';
+export type LicenseRequirement = 'One License' | 'Two Licenses';
 
 export interface CSRState {
   stateId: string;
   providerType: ProviderType;
+  licenseRequirement: LicenseRequirement;
+  notes?: string; // For annotations like "Prescriptive Authority", "RX Authority"
+}
+
+export interface TBDState {
+  stateId: string;
+  licenseRequirement: LicenseRequirement;
 }
 
 export interface CSRData {
   controlled: CSRState[];
   nonControlled: CSRState[];
-  tbd: string[];
+  tbd: TBDState[];
 }
 
 export const CSR_DATA: CSRData = {
-  // Controlled substances - states with specific provider requirements
+  // Controlled substances - states where CSR is Required (CSR Required = Yes)
   controlled: [
-    { stateId: 'WV', providerType: 'NPs' },
-    { stateId: 'TN', providerType: 'MD' },
-    { stateId: 'DC', providerType: 'NPs' },
-    { stateId: 'KY', providerType: 'MDs' },
-    { stateId: 'AK', providerType: 'MD' },
-    { stateId: 'GA', providerType: 'MD' },
-    { stateId: 'SC', providerType: 'MD' },
+    { stateId: 'DC', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'KY', providerType: 'MD', licenseRequirement: 'One License', notes: 'Prescriptive Authority' },
+    { stateId: 'SC', providerType: 'MD', licenseRequirement: 'Two Licenses' },
+    { stateId: 'WV', providerType: 'NP', licenseRequirement: 'One License', notes: 'RX Authority' },
+    { stateId: 'TN', providerType: 'MD', licenseRequirement: 'One License' },
+    { stateId: 'GA', providerType: 'MD', licenseRequirement: 'One License' },
+    { stateId: 'AK', providerType: 'MD', licenseRequirement: 'One License' },
   ],
 
-  // Non-controlled substances - states with specific provider requirements
+  // Non-controlled substances - states where CSR is NOT Required (CSR Required = No)
   nonControlled: [
-    { stateId: 'RI', providerType: 'NP' },
-    { stateId: 'DE', providerType: 'NP' },
-    { stateId: 'HI', providerType: 'NP' },
-    { stateId: 'LA', providerType: 'NP' },
-    { stateId: 'KY', providerType: 'NPs' },
-    { stateId: 'OK', providerType: 'NP' },
-    { stateId: 'AL', providerType: 'NP' },
-    { stateId: 'CT', providerType: 'NP' },
-    { stateId: 'NH', providerType: 'NP' },
+    { stateId: 'AL', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'CT', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'DE', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'HI', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'LA', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'OK', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'RI', providerType: 'NP', licenseRequirement: 'Two Licenses' },
+    { stateId: 'NH', providerType: 'NP', licenseRequirement: 'One License' },
+    { stateId: 'KY', providerType: 'NP', licenseRequirement: 'One License', notes: 'Prescriptive Authority' },
   ],
 
   // States to be determined
-  tbd: ['AR', 'MS', 'MO', 'KS'],
+  tbd: [
+    { stateId: 'MO', licenseRequirement: 'Two Licenses' },
+    { stateId: 'AR', licenseRequirement: 'One License' },
+    { stateId: 'MS', licenseRequirement: 'One License' },
+    { stateId: 'KS', licenseRequirement: 'One License' },
+  ],
 };
 
 // Colors for each category
@@ -74,7 +87,7 @@ export const CSR_CATEGORY_INFO: Record<CSRCategory, { name: string; description:
 // Helper to get all states in a category
 export function getStatesInCategory(category: CSRCategory): string[] {
   if (category === 'tbd') {
-    return CSR_DATA.tbd;
+    return CSR_DATA.tbd.map(s => s.stateId);
   }
   return CSR_DATA[category].map(s => s.stateId);
 }
@@ -90,7 +103,7 @@ export function getProviderType(stateId: string, category: CSRCategory): Provide
 export function getAllCSRStates(): string[] {
   const controlled = CSR_DATA.controlled.map(s => s.stateId);
   const nonControlled = CSR_DATA.nonControlled.map(s => s.stateId);
-  const tbd = CSR_DATA.tbd;
+  const tbd = CSR_DATA.tbd.map(s => s.stateId);
   return [...new Set([...controlled, ...nonControlled, ...tbd])];
 }
 
@@ -103,10 +116,31 @@ export function getCategoriesForState(stateId: string): CSRCategory[] {
   if (CSR_DATA.nonControlled.some(s => s.stateId === stateId)) {
     categories.push('nonControlled');
   }
-  if (CSR_DATA.tbd.includes(stateId)) {
+  if (CSR_DATA.tbd.some(s => s.stateId === stateId)) {
     categories.push('tbd');
   }
   return categories;
+}
+
+// Helper to get license requirement for a state
+export function getLicenseRequirement(stateId: string): LicenseRequirement | null {
+  const controlled = CSR_DATA.controlled.find(s => s.stateId === stateId);
+  if (controlled) return controlled.licenseRequirement;
+
+  const nonControlled = CSR_DATA.nonControlled.find(s => s.stateId === stateId);
+  if (nonControlled) return nonControlled.licenseRequirement;
+
+  const tbd = CSR_DATA.tbd.find(s => s.stateId === stateId);
+  if (tbd) return tbd.licenseRequirement;
+
+  return null;
+}
+
+// Helper to get notes for a state (like "Prescriptive Authority", "RX Authority")
+export function getStateNotes(stateId: string, category: CSRCategory): string | null {
+  if (category === 'tbd') return null;
+  const state = CSR_DATA[category].find(s => s.stateId === stateId);
+  return state?.notes || null;
 }
 
 // Provider type filter - normalized to handle MD/MDs and NP/NPs

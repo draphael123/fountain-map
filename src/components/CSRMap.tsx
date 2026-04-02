@@ -14,6 +14,8 @@ import {
   CSR_CATEGORY_INFO,
   getProviderType,
   getCategoriesForState,
+  getLicenseRequirement,
+  getStateNotes,
   ProviderTypeFilter,
   PROVIDER_TYPE_COLORS,
   matchesProviderTypeFilter,
@@ -212,18 +214,18 @@ export function CSRMap() {
 
   // Download CSV
   const downloadCSV = useCallback(() => {
-    const rows: string[] = ['State,State Name,Category,Provider Type'];
+    const rows: string[] = ['State,State Name,CSR Required,Credential Type,License Requirement,Notes'];
 
-    CSR_DATA.controlled.forEach(({ stateId, providerType }) => {
-      rows.push(`${stateId},${getStateName(stateId)},Controlled,${providerType}`);
+    CSR_DATA.controlled.forEach(({ stateId, providerType, licenseRequirement, notes }) => {
+      rows.push(`${stateId},${getStateName(stateId)},Yes,${providerType},${licenseRequirement},${notes || ''}`);
     });
 
-    CSR_DATA.nonControlled.forEach(({ stateId, providerType }) => {
-      rows.push(`${stateId},${getStateName(stateId)},Non-Controlled,${providerType}`);
+    CSR_DATA.nonControlled.forEach(({ stateId, providerType, licenseRequirement, notes }) => {
+      rows.push(`${stateId},${getStateName(stateId)},No,${providerType},${licenseRequirement},${notes || ''}`);
     });
 
-    CSR_DATA.tbd.forEach(stateId => {
-      rows.push(`${stateId},${getStateName(stateId)},TBD,TBD`);
+    CSR_DATA.tbd.forEach(({ stateId, licenseRequirement }) => {
+      rows.push(`${stateId},${getStateName(stateId)},TBD,,${licenseRequirement},`);
     });
 
     const csvContent = rows.join('\n');
@@ -594,20 +596,26 @@ export function CSRMap() {
                 </span>
               </div>
               <div className="space-y-2">
-                {CSR_DATA.controlled.map(({ stateId, providerType }) => (
+                {CSR_DATA.controlled.map(({ stateId, providerType, licenseRequirement, notes }) => (
                   <div
-                    key={stateId}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20"
+                    key={`${stateId}-controlled`}
+                    className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20"
                   >
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                      {getStateName(stateId)}
-                    </span>
-                    <span
-                      className="text-xs font-bold px-2 py-1 rounded"
-                      style={{ backgroundColor: CSR_COLORS.controlled, color: 'white' }}
-                    >
-                      {providerType}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {getStateName(stateId)}
+                        {notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({notes})</span>}
+                      </span>
+                      <span
+                        className="text-xs font-bold px-2 py-1 rounded"
+                        style={{ backgroundColor: CSR_COLORS.controlled, color: 'white' }}
+                      >
+                        {providerType}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {licenseRequirement}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -625,20 +633,26 @@ export function CSRMap() {
                 </span>
               </div>
               <div className="space-y-2">
-                {CSR_DATA.nonControlled.map(({ stateId, providerType }) => (
+                {CSR_DATA.nonControlled.map(({ stateId, providerType, licenseRequirement, notes }) => (
                   <div
-                    key={stateId}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"
+                    key={`${stateId}-nonControlled`}
+                    className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"
                   >
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                      {getStateName(stateId)}
-                    </span>
-                    <span
-                      className="text-xs font-bold px-2 py-1 rounded"
-                      style={{ backgroundColor: CSR_COLORS.nonControlled, color: 'white' }}
-                    >
-                      {providerType}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {getStateName(stateId)}
+                        {notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({notes})</span>}
+                      </span>
+                      <span
+                        className="text-xs font-bold px-2 py-1 rounded"
+                        style={{ backgroundColor: CSR_COLORS.nonControlled, color: 'white' }}
+                      >
+                        {providerType}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {licenseRequirement}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -656,20 +670,25 @@ export function CSRMap() {
                 </span>
               </div>
               <div className="space-y-2">
-                {CSR_DATA.tbd.map(stateId => (
+                {CSR_DATA.tbd.map(({ stateId, licenseRequirement }) => (
                   <div
                     key={stateId}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20"
+                    className="px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20"
                   >
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                      {getStateName(stateId)}
-                    </span>
-                    <span
-                      className="text-xs font-bold px-2 py-1 rounded"
-                      style={{ backgroundColor: CSR_COLORS.tbd, color: 'white' }}
-                    >
-                      TBD
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {getStateName(stateId)}
+                      </span>
+                      <span
+                        className="text-xs font-bold px-2 py-1 rounded"
+                        style={{ backgroundColor: CSR_COLORS.tbd, color: 'white' }}
+                      >
+                        TBD
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {licenseRequirement}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -697,24 +716,31 @@ export function CSRMap() {
 
             {tooltip.categories.map(category => {
               const providerType = getProviderType(tooltip.stateId, category);
+              const notes = getStateNotes(tooltip.stateId, category);
+              const licenseReq = getLicenseRequirement(tooltip.stateId);
               return (
-                <div
-                  key={category}
-                  className="flex items-center justify-between py-1"
-                >
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: CSR_COLORS[category] }}
-                  >
-                    {CSR_CATEGORY_INFO[category].name}
-                  </span>
-                  {providerType && (
+                <div key={category} className="py-1">
+                  <div className="flex items-center justify-between">
                     <span
-                      className="text-xs font-bold px-2 py-0.5 rounded"
-                      style={{ backgroundColor: CSR_COLORS[category], color: 'white' }}
+                      className="text-sm font-medium"
+                      style={{ color: CSR_COLORS[category] }}
                     >
-                      {providerType}
+                      {CSR_CATEGORY_INFO[category].name}
+                      {notes && <span className="text-xs opacity-75"> ({notes})</span>}
                     </span>
+                    {providerType && (
+                      <span
+                        className="text-xs font-bold px-2 py-0.5 rounded"
+                        style={{ backgroundColor: CSR_COLORS[category], color: 'white' }}
+                      >
+                        {providerType}
+                      </span>
+                    )}
+                  </div>
+                  {licenseReq && (
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {licenseReq}
+                    </div>
                   )}
                 </div>
               );
