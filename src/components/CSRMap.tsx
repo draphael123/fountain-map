@@ -176,10 +176,11 @@ export function CSRMap() {
       return PROVIDER_TYPE_COLORS[providerTypeFilter];
     }
 
-    // Show primary category color (priority: controlled > nonControlled > tbd)
+    // Show primary category color (priority: controlled > nonControlled > tbd > active)
     if (categories.includes('controlled')) return CSR_COLORS.controlled;
     if (categories.includes('nonControlled')) return CSR_COLORS.nonControlled;
     if (categories.includes('tbd')) return CSR_COLORS.tbd;
+    if (categories.includes('active')) return CSR_COLORS.active;
     return CSR_COLORS.inactive;
   }, [stateMatchesFilters, providerTypeFilter]);
 
@@ -209,6 +210,7 @@ export function CSRMap() {
     controlled: CSR_DATA.controlled.length,
     nonControlled: CSR_DATA.nonControlled.length,
     tbd: CSR_DATA.tbd.length,
+    active: CSR_DATA.active.length,
     ...countStatesByProviderType(),
   }), []);
 
@@ -226,6 +228,10 @@ export function CSRMap() {
 
     CSR_DATA.tbd.forEach(({ stateId, licenseRequirement }) => {
       rows.push(`${stateId},${getStateName(stateId)},TBD,,${licenseRequirement},`);
+    });
+
+    CSR_DATA.active.forEach(({ stateId, licenseRequirement, notes }) => {
+      rows.push(`${stateId},${getStateName(stateId)},Active,,${licenseRequirement},${notes || ''}`);
     });
 
     const csvContent = rows.join('\n');
@@ -268,7 +274,7 @@ export function CSRMap() {
           >
             All Categories
           </button>
-          {(['controlled', 'nonControlled', 'tbd'] as CSRCategory[]).map(category => (
+          {(['controlled', 'nonControlled', 'tbd', 'active'] as CSRCategory[]).map(category => (
             <button
               key={category}
               onClick={() => setCategoryFilter(category)}
@@ -351,7 +357,7 @@ export function CSRMap() {
       <div className="flex flex-wrap items-center justify-center gap-4 mb-6 px-4">
         {providerTypeFilter === 'all' ? (
           <>
-            {(['controlled', 'nonControlled', 'tbd'] as CSRCategory[]).map(category => (
+            {(['controlled', 'nonControlled', 'tbd', 'active'] as CSRCategory[]).map(category => (
               <div key={category} className="flex items-center gap-2">
                 <div
                   className="w-4 h-4 rounded"
@@ -583,8 +589,8 @@ export function CSRMap() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-            {/* Controlled States */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0">
+            {/* Controlled States (CSR Required) - GREEN */}
             <div className="p-4 md:border-r border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
                 <span
@@ -592,14 +598,14 @@ export function CSRMap() {
                   style={{ backgroundColor: CSR_COLORS.controlled }}
                 />
                 <span className="font-bold text-sm" style={{ color: CSR_COLORS.controlled }}>
-                  Controlled ({stats.controlled})
+                  CSR Required ({stats.controlled})
                 </span>
               </div>
               <div className="space-y-2">
                 {CSR_DATA.controlled.map(({ stateId, providerType, licenseRequirement, notes }) => (
                   <div
                     key={`${stateId}-controlled`}
-                    className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20"
+                    className="px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -621,22 +627,22 @@ export function CSRMap() {
               </div>
             </div>
 
-            {/* Non-Controlled States */}
-            <div className="p-4 md:border-r border-gray-100 dark:border-gray-700 bg-blue-50/30 dark:bg-blue-900/10">
+            {/* Non-Controlled States (No CSR Needed) - GRAY */}
+            <div className="p-4 md:border-r border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800/30">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
                 <span
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: CSR_COLORS.nonControlled }}
                 />
-                <span className="font-bold text-sm" style={{ color: CSR_COLORS.nonControlled }}>
-                  Non-Controlled ({stats.nonControlled})
+                <span className="font-bold text-sm" style={{ color: '#6B7280' }}>
+                  No CSR Needed ({stats.nonControlled})
                 </span>
               </div>
               <div className="space-y-2">
                 {CSR_DATA.nonControlled.map(({ stateId, providerType, licenseRequirement, notes }) => (
                   <div
                     key={`${stateId}-nonControlled`}
-                    className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"
+                    className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700/30"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -644,8 +650,7 @@ export function CSRMap() {
                         {notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({notes})</span>}
                       </span>
                       <span
-                        className="text-xs font-bold px-2 py-1 rounded"
-                        style={{ backgroundColor: CSR_COLORS.nonControlled, color: 'white' }}
+                        className="text-xs font-bold px-2 py-1 rounded bg-gray-500 text-white"
                       >
                         {providerType}
                       </span>
@@ -658,15 +663,15 @@ export function CSRMap() {
               </div>
             </div>
 
-            {/* TBD States */}
-            <div className="p-4 bg-amber-50/30 dark:bg-amber-900/10">
+            {/* TBD States - YELLOW */}
+            <div className="p-4 md:border-r border-gray-100 dark:border-gray-700 bg-amber-50/30 dark:bg-amber-900/10">
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
                 <span
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: CSR_COLORS.tbd }}
                 />
                 <span className="font-bold text-sm" style={{ color: CSR_COLORS.tbd }}>
-                  States TBD ({stats.tbd})
+                  TBD ({stats.tbd})
                 </span>
               </div>
               <div className="space-y-2">
@@ -684,6 +689,37 @@ export function CSRMap() {
                         style={{ backgroundColor: CSR_COLORS.tbd, color: 'white' }}
                       >
                         TBD
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {licenseRequirement}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Active States - WHITE */}
+            <div className="p-4 bg-white dark:bg-gray-800">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                <span
+                  className="w-3 h-3 rounded-full border border-gray-300"
+                  style={{ backgroundColor: CSR_COLORS.active }}
+                />
+                <span className="font-bold text-sm text-gray-700 dark:text-gray-300">
+                  Active ({stats.active})
+                </span>
+              </div>
+              <div className="space-y-2">
+                {CSR_DATA.active.map(({ stateId, licenseRequirement, notes }) => (
+                  <div
+                    key={stateId}
+                    className="px-3 py-2 rounded-lg bg-white dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {getStateName(stateId)}
+                        {notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({notes})</span>}
                       </span>
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">

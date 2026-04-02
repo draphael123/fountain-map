@@ -1,7 +1,8 @@
 // CSR Licensing Data
 // Defines which states have CSR requirements and what provider types are needed
+// Source: https://www.deadiversion.usdoj.gov/drugreg/reg_apps/pract-state-lic-require.html
 
-export type CSRCategory = 'controlled' | 'nonControlled' | 'tbd';
+export type CSRCategory = 'controlled' | 'nonControlled' | 'tbd' | 'active';
 export type ProviderType = 'MD' | 'NP' | 'MDs' | 'NPs';
 export type LicenseRequirement = 'One License' | 'Two Licenses';
 
@@ -17,14 +18,21 @@ export interface TBDState {
   licenseRequirement: LicenseRequirement;
 }
 
+export interface ActiveState {
+  stateId: string;
+  licenseRequirement: LicenseRequirement;
+  notes?: string; // For annotations like "Furnishing license", "RX Authority"
+}
+
 export interface CSRData {
   controlled: CSRState[];
   nonControlled: CSRState[];
   tbd: TBDState[];
+  active: ActiveState[];
 }
 
 export const CSR_DATA: CSRData = {
-  // Controlled substances - states where CSR is Required (CSR Required = Yes)
+  // Controlled substances - states where CSR is Required (CSR Required = Yes) - GREEN
   controlled: [
     { stateId: 'DC', providerType: 'NP', licenseRequirement: 'Two Licenses' },
     { stateId: 'KY', providerType: 'MD', licenseRequirement: 'One License', notes: 'Prescriptive Authority' },
@@ -35,7 +43,7 @@ export const CSR_DATA: CSRData = {
     { stateId: 'AK', providerType: 'MD', licenseRequirement: 'One License' },
   ],
 
-  // Non-controlled substances - states where CSR is NOT Required (CSR Required = No)
+  // Non-controlled substances - states where CSR is NOT Required (CSR Required = No) - GRAY
   nonControlled: [
     { stateId: 'AL', providerType: 'NP', licenseRequirement: 'Two Licenses' },
     { stateId: 'CT', providerType: 'NP', licenseRequirement: 'Two Licenses' },
@@ -48,39 +56,67 @@ export const CSR_DATA: CSRData = {
     { stateId: 'KY', providerType: 'NP', licenseRequirement: 'One License', notes: 'Prescriptive Authority' },
   ],
 
-  // States to be determined
+  // States to be determined - YELLOW
   tbd: [
     { stateId: 'MO', licenseRequirement: 'Two Licenses' },
     { stateId: 'AR', licenseRequirement: 'One License' },
     { stateId: 'MS', licenseRequirement: 'One License' },
     { stateId: 'KS', licenseRequirement: 'One License' },
   ],
+
+  // Active states with existing CSR tracking - WHITE
+  active: [
+    { stateId: 'CA', licenseRequirement: 'One License', notes: 'Furnishing license' },
+    { stateId: 'CO', licenseRequirement: 'One License', notes: 'RX Authority' },
+    { stateId: 'GU', licenseRequirement: 'Two Licenses' },
+    { stateId: 'ID', licenseRequirement: 'Two Licenses' },
+    { stateId: 'IL', licenseRequirement: 'Two Licenses' },
+    { stateId: 'IN', licenseRequirement: 'Two Licenses' },
+    { stateId: 'IA', licenseRequirement: 'Two Licenses' },
+    { stateId: 'MD', licenseRequirement: 'Two Licenses' },
+    { stateId: 'MA', licenseRequirement: 'Two Licenses' },
+    { stateId: 'MI', licenseRequirement: 'Two Licenses' },
+    { stateId: 'NV', licenseRequirement: 'Two Licenses' },
+    { stateId: 'NJ', licenseRequirement: 'Two Licenses' },
+    { stateId: 'NM', licenseRequirement: 'Two Licenses' },
+    { stateId: 'PA', licenseRequirement: 'One License', notes: 'RX Authority' },
+    { stateId: 'PR', licenseRequirement: 'Two Licenses' },
+    { stateId: 'SD', licenseRequirement: 'Two Licenses' },
+    { stateId: 'UT', licenseRequirement: 'Two Licenses' },
+    { stateId: 'WY', licenseRequirement: 'Two Licenses' },
+  ],
 };
 
 // Colors for each category
 export const CSR_COLORS = {
-  controlled: '#EF4444',      // Red
-  nonControlled: '#3B82F6',   // Blue
-  tbd: '#F59E0B',             // Amber/Yellow
-  inactive: '#E5E7EB',        // Gray
+  controlled: '#22C55E',      // Green - CSR Required
+  nonControlled: '#9CA3AF',   // Gray - No CSR Needed
+  tbd: '#EAB308',             // Yellow - Pending Determination
+  active: '#FFFFFF',          // White - Active state with existing CSR tracking
+  inactive: '#E5E7EB',        // Light Gray - Not in any category
 };
 
 // Category display info
 export const CSR_CATEGORY_INFO: Record<CSRCategory, { name: string; description: string; color: string }> = {
   controlled: {
-    name: 'Controlled',
-    description: 'States with controlled substance requirements',
+    name: 'CSR Required',
+    description: 'States where CSR is required for controlled substances',
     color: CSR_COLORS.controlled,
   },
   nonControlled: {
-    name: 'Non-Controlled',
-    description: 'States with non-controlled substance requirements',
+    name: 'No CSR Needed',
+    description: 'States where no CSR is needed',
     color: CSR_COLORS.nonControlled,
   },
   tbd: {
-    name: 'States TBD',
-    description: 'States still being determined',
+    name: 'TBD',
+    description: 'States pending determination',
     color: CSR_COLORS.tbd,
+  },
+  active: {
+    name: 'Active',
+    description: 'Active states with existing CSR tracking',
+    color: CSR_COLORS.active,
   },
 };
 
@@ -89,12 +125,15 @@ export function getStatesInCategory(category: CSRCategory): string[] {
   if (category === 'tbd') {
     return CSR_DATA.tbd.map(s => s.stateId);
   }
+  if (category === 'active') {
+    return CSR_DATA.active.map(s => s.stateId);
+  }
   return CSR_DATA[category].map(s => s.stateId);
 }
 
 // Helper to get provider type for a state in a category
 export function getProviderType(stateId: string, category: CSRCategory): ProviderType | null {
-  if (category === 'tbd') return null;
+  if (category === 'tbd' || category === 'active') return null;
   const state = CSR_DATA[category].find(s => s.stateId === stateId);
   return state?.providerType || null;
 }
@@ -104,7 +143,8 @@ export function getAllCSRStates(): string[] {
   const controlled = CSR_DATA.controlled.map(s => s.stateId);
   const nonControlled = CSR_DATA.nonControlled.map(s => s.stateId);
   const tbd = CSR_DATA.tbd.map(s => s.stateId);
-  return [...new Set([...controlled, ...nonControlled, ...tbd])];
+  const active = CSR_DATA.active.map(s => s.stateId);
+  return [...new Set([...controlled, ...nonControlled, ...tbd, ...active])];
 }
 
 // Helper to get category for a state (returns array since KY is in both controlled and non-controlled)
@@ -118,6 +158,9 @@ export function getCategoriesForState(stateId: string): CSRCategory[] {
   }
   if (CSR_DATA.tbd.some(s => s.stateId === stateId)) {
     categories.push('tbd');
+  }
+  if (CSR_DATA.active.some(s => s.stateId === stateId)) {
+    categories.push('active');
   }
   return categories;
 }
@@ -133,12 +176,19 @@ export function getLicenseRequirement(stateId: string): LicenseRequirement | nul
   const tbd = CSR_DATA.tbd.find(s => s.stateId === stateId);
   if (tbd) return tbd.licenseRequirement;
 
+  const active = CSR_DATA.active.find(s => s.stateId === stateId);
+  if (active) return active.licenseRequirement;
+
   return null;
 }
 
 // Helper to get notes for a state (like "Prescriptive Authority", "RX Authority")
 export function getStateNotes(stateId: string, category: CSRCategory): string | null {
   if (category === 'tbd') return null;
+  if (category === 'active') {
+    const state = CSR_DATA.active.find(s => s.stateId === stateId);
+    return state?.notes || null;
+  }
   const state = CSR_DATA[category].find(s => s.stateId === stateId);
   return state?.notes || null;
 }
