@@ -1,6 +1,7 @@
-// CSR Licensing Data
-// Defines which states have CSR requirements and what provider types are needed
-// Source: https://www.deadiversion.usdoj.gov/drugreg/reg_apps/pract-state-lic-require.html
+// CSR Licensing Data — defines which states have CSR requirements and provider types
+/** DEA reference for state practitioner registration (CSR) requirements */
+export const CSR_DEA_SOURCE_URL =
+  'https://www.deadiversion.usdoj.gov/drugreg/reg_apps/pract-state-lic-require.html';
 
 export type CSRCategory = 'controlled' | 'nonControlled' | 'tbd' | 'active';
 export type ProviderType = 'MD' | 'NP' | 'MDs' | 'NPs';

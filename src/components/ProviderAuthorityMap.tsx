@@ -16,44 +16,7 @@ import {
 } from '../data/providerAuthority';
 import { US_STATES, SERVICE_INFO } from '../data/serviceAvailability';
 import type { ServiceType } from '../data/serviceAvailability';
-
-const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
-
-const FIPS_TO_STATE: Record<string, string> = {
-  '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA',
-  '08': 'CO', '09': 'CT', '10': 'DE', '11': 'DC', '12': 'FL',
-  '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN',
-  '19': 'IA', '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME',
-  '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS',
-  '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH',
-  '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC', '38': 'ND',
-  '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI',
-  '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT',
-  '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV', '55': 'WI',
-  '56': 'WY',
-};
-
-const STATE_CENTERS: Record<string, [number, number]> = {
-  'AL': [-86.9, 32.8], 'AK': [-153.5, 64.2], 'AZ': [-111.7, 34.2], 'AR': [-92.4, 34.9],
-  'CA': [-119.5, 37.2], 'CO': [-105.5, 39.0], 'CT': [-72.7, 41.6], 'DE': [-75.5, 39.0],
-  'DC': [-77.0, 38.9], 'FL': [-81.7, 28.1], 'GA': [-83.4, 32.6], 'HI': [-157.5, 20.8],
-  'ID': [-114.5, 44.4], 'IL': [-89.2, 40.0], 'IN': [-86.2, 39.9], 'IA': [-93.5, 42.0],
-  'KS': [-98.4, 38.5], 'KY': [-85.3, 37.8], 'LA': [-91.9, 31.0], 'ME': [-69.0, 45.4],
-  'MD': [-76.6, 39.0], 'MA': [-71.8, 42.2], 'MI': [-84.7, 43.3], 'MN': [-94.3, 46.3],
-  'MS': [-89.7, 32.7], 'MO': [-92.5, 38.4], 'MT': [-109.6, 47.0], 'NE': [-99.8, 41.5],
-  'NV': [-117.0, 39.5], 'NH': [-71.5, 43.7], 'NJ': [-74.4, 40.1], 'NM': [-106.0, 34.5],
-  'NY': [-75.5, 43.0], 'NC': [-79.4, 35.5], 'ND': [-100.5, 47.4], 'OH': [-82.8, 40.2],
-  'OK': [-97.5, 35.5], 'OR': [-120.5, 44.0], 'PA': [-77.6, 40.9], 'RI': [-71.5, 41.7],
-  'SC': [-80.9, 33.9], 'SD': [-100.2, 44.4], 'TN': [-86.3, 35.8], 'TX': [-99.5, 31.5],
-  'UT': [-111.7, 39.3], 'VT': [-72.6, 44.0], 'VA': [-78.8, 37.5], 'WA': [-120.5, 47.4],
-  'WV': [-80.6, 38.9], 'WI': [-89.8, 44.6], 'WY': [-107.5, 43.0],
-};
-
-const SMALL_STATES: Record<string, { dx: number; dy: number }> = {
-  'VT': { dx: 45, dy: -10 }, 'NH': { dx: 40, dy: 5 }, 'MA': { dx: 50, dy: 0 },
-  'RI': { dx: 40, dy: 5 }, 'CT': { dx: 40, dy: 10 }, 'NJ': { dx: 35, dy: 5 },
-  'DE': { dx: 40, dy: 0 }, 'MD': { dx: 50, dy: 15 }, 'DC': { dx: 45, dy: 25 },
-};
+import { GEO_URL, FIPS_TO_STATE, STATE_CENTERS, SMALL_STATES } from '../data/usMapGeo';
 
 const ACTIVE_COLOR = '#0D9488';
 const INACTIVE_COLOR = '#D1D5DB';
@@ -68,7 +31,12 @@ interface TooltipState {
   row: ProviderLicensingRow | undefined;
 }
 
-export function ProviderAuthorityMap() {
+interface ProviderAuthorityMapProps {
+  /** When false, hides the large title (e.g. when embedded under Licensing). */
+  showTitle?: boolean;
+}
+
+export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapProps) {
   const [data, setData] = useState<ProviderLicensingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -202,14 +170,16 @@ export function ProviderAuthorityMap() {
 
   return (
     <div className="relative w-full">
-      <div className="text-center mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-fountain-dark dark:text-white">
-          Provider Authority Map
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
-          Filter by providers and states to see where providers are licensed
-        </p>
-      </div>
+      {showTitle && (
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-fountain-dark dark:text-white">
+            Provider Authority Map
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
+            Filter by providers and states to see where providers are licensed
+          </p>
+        </div>
+      )}
 
       {/* Service filter */}
       <div className="max-w-5xl mx-auto mb-4 px-4 sm:px-6 no-print">

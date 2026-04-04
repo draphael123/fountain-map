@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -7,9 +7,12 @@ import {
   Annotation,
 } from 'react-simple-maps';
 import { getStateName } from '../data/serviceAvailability';
+import { GEO_URL, FIPS_TO_STATE, STATE_CENTERS, SMALL_STATES } from '../data/usMapGeo';
+import { DATA_LAST_UPDATED, CSR_DATA_REVIEW_NOTE } from '../data/dataMeta';
 import {
   CSRCategory,
   CSR_DATA,
+  CSR_DEA_SOURCE_URL,
   CSR_COLORS,
   CSR_CATEGORY_INFO,
   getProviderType,
@@ -22,56 +25,19 @@ import {
   countStatesByProviderType,
 } from '../data/csrLicensing';
 
-const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
-
-// State FIPS codes to state abbreviations mapping
-const FIPS_TO_STATE: Record<string, string> = {
-  '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA',
-  '08': 'CO', '09': 'CT', '10': 'DE', '11': 'DC', '12': 'FL',
-  '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN',
-  '19': 'IA', '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME',
-  '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS',
-  '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH',
-  '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC', '38': 'ND',
-  '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI',
-  '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT',
-  '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV', '55': 'WI',
-  '56': 'WY',
-};
-
-// State label coordinates [longitude, latitude]
-const STATE_CENTERS: Record<string, [number, number]> = {
-  'AL': [-86.9, 32.8], 'AK': [-153.5, 64.2], 'AZ': [-111.7, 34.2],
-  'AR': [-92.4, 34.9], 'CA': [-119.5, 37.2], 'CO': [-105.5, 39.0],
-  'CT': [-72.7, 41.6], 'DE': [-75.5, 39.0], 'DC': [-77.0, 38.9],
-  'FL': [-81.7, 28.1], 'GA': [-83.4, 32.6], 'HI': [-157.5, 20.8],
-  'ID': [-114.5, 44.4], 'IL': [-89.2, 40.0], 'IN': [-86.2, 39.9],
-  'IA': [-93.5, 42.0], 'KS': [-98.4, 38.5], 'KY': [-85.3, 37.8],
-  'LA': [-91.9, 31.0], 'ME': [-69.0, 45.4], 'MD': [-76.6, 39.0],
-  'MA': [-71.8, 42.2], 'MI': [-84.7, 43.3], 'MN': [-94.3, 46.3],
-  'MS': [-89.7, 32.7], 'MO': [-92.5, 38.4], 'MT': [-109.6, 47.0],
-  'NE': [-99.8, 41.5], 'NV': [-117.0, 39.5], 'NH': [-71.5, 43.7],
-  'NJ': [-74.4, 40.1], 'NM': [-106.0, 34.5], 'NY': [-75.5, 43.0],
-  'NC': [-79.4, 35.5], 'ND': [-100.5, 47.4], 'OH': [-82.8, 40.2],
-  'OK': [-97.5, 35.5], 'OR': [-120.5, 44.0], 'PA': [-77.6, 40.9],
-  'RI': [-71.5, 41.7], 'SC': [-80.9, 33.9], 'SD': [-100.2, 44.4],
-  'TN': [-86.3, 35.8], 'TX': [-99.5, 31.5], 'UT': [-111.7, 39.3],
-  'VT': [-72.6, 44.0], 'VA': [-78.8, 37.5], 'WA': [-120.5, 47.4],
-  'WV': [-80.6, 38.9], 'WI': [-89.8, 44.6], 'WY': [-107.5, 43.0],
-};
-
-// Small states that need offset annotations
-const SMALL_STATES: Record<string, { dx: number; dy: number }> = {
-  'VT': { dx: 45, dy: -10 },
-  'NH': { dx: 40, dy: 5 },
-  'MA': { dx: 50, dy: 0 },
-  'RI': { dx: 40, dy: 5 },
-  'CT': { dx: 40, dy: 10 },
-  'NJ': { dx: 35, dy: 5 },
-  'DE': { dx: 40, dy: 0 },
-  'MD': { dx: 50, dy: 15 },
-  'DC': { dx: 45, dy: 25 },
-};
+function useNarrowViewport(maxWidth = 639): boolean {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth <= maxWidth : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${maxWidth}px)`);
+    const update = () => setNarrow(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [maxWidth]);
+  return narrow;
+}
 
 interface TooltipInfo {
   x: number;
@@ -83,11 +49,26 @@ interface TooltipInfo {
 
 type CategoryFilter = 'all' | CSRCategory;
 
+function readInitialCsrFilters(): { category: CategoryFilter; provider: ProviderTypeFilter } {
+  if (typeof window === 'undefined') return { category: 'all', provider: 'all' };
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get('csrCategory');
+  const pt = params.get('csrProvider');
+  const validCats: CategoryFilter[] = ['all', 'controlled', 'nonControlled', 'tbd', 'active'];
+  const validPts: ProviderTypeFilter[] = ['all', 'md', 'np'];
+  return {
+    category: validCats.includes(cat as CategoryFilter) ? (cat as CategoryFilter) : 'all',
+    provider: validPts.includes(pt as ProviderTypeFilter) ? (pt as ProviderTypeFilter) : 'all',
+  };
+}
+
 export function CSRMap() {
+  const initialFilters = readInitialCsrFilters();
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
-  const [providerTypeFilter, setProviderTypeFilter] = useState<ProviderTypeFilter>('all');
-  const [isMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 640);
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(initialFilters.category);
+  const [providerTypeFilter, setProviderTypeFilter] = useState<ProviderTypeFilter>(initialFilters.provider);
+  const [highlightedStateId, setHighlightedStateId] = useState<string | null>(null);
+  const isMobile = useNarrowViewport(639);
 
   // Zoom state
   const [mapZoom, setMapZoom] = useState(1);
@@ -214,6 +195,27 @@ export function CSRMap() {
     ...countStatesByProviderType(),
   }), []);
 
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (categoryFilter === 'all') url.searchParams.delete('csrCategory');
+    else url.searchParams.set('csrCategory', categoryFilter);
+    if (providerTypeFilter === 'all') url.searchParams.delete('csrProvider');
+    else url.searchParams.set('csrProvider', providerTypeFilter);
+    window.history.replaceState({}, '', url.toString());
+  }, [categoryFilter, providerTypeFilter]);
+
+  const scrollToMap = useCallback(() => {
+    document.getElementById('csr-map')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, []);
+
+  const focusStateFromList = useCallback(
+    (stateId: string) => {
+      setHighlightedStateId(stateId);
+      scrollToMap();
+    },
+    [scrollToMap]
+  );
+
   // Download CSV
   const downloadCSV = useCallback(() => {
     const rows: string[] = ['State,State Name,CSR Required,Credential Type,License Requirement,Notes'];
@@ -246,17 +248,85 @@ export function CSRMap() {
     URL.revokeObjectURL(url);
   }, []);
 
+  const downloadJSON = useCallback(() => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      dataLastUpdated: DATA_LAST_UPDATED,
+      sourceUrl: CSR_DEA_SOURCE_URL,
+      controlled: CSR_DATA.controlled,
+      nonControlled: CSR_DATA.nonControlled,
+      tbd: CSR_DATA.tbd,
+      active: CSR_DATA.active,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'CSR_Licensing_Requirements.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, []);
+
   return (
-    <div className="w-full">
+    <div className="w-full licensing-csr-print">
+      <a href="#csr-map" className="sr-only">
+        Skip to CSR map
+      </a>
+
       {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-2xl lg:text-3xl font-bold text-fountain-dark dark:text-white">
           CSR Licensing Map
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Customer Service Representative licensing requirements by state
+          Customer Service Representative (DEA CSR registration) requirements by state
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 max-w-2xl mx-auto">
+          Data last synced with app: {DATA_LAST_UPDATED}. {CSR_DATA_REVIEW_NOTE}
         </p>
       </div>
+
+      {/* Glossary */}
+      <details className="max-w-3xl mx-auto mb-6 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-800/50 px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+        <summary className="cursor-pointer font-semibold text-fountain-dark dark:text-white list-none flex items-center justify-between gap-2">
+          <span>What do the categories mean?</span>
+          <span className="text-gray-400 text-xs" aria-hidden>
+            ▼
+          </span>
+        </summary>
+        <ul className="mt-3 space-y-2 list-disc pl-5 text-left">
+          <li>
+            <strong className="text-fountain-dark dark:text-white">CSR Required (controlled)</strong> — State expects a
+            Customer Service Representative registration aligned with controlled-substance prescribing in that state.
+          </li>
+          <li>
+            <strong className="text-fountain-dark dark:text-white">No CSR needed (non-controlled)</strong> — Under the
+            modeled rule set, CSR is not required for the listed credential in that state.
+          </li>
+          <li>
+            <strong className="text-fountain-dark dark:text-white">TBD</strong> — Requirement not finalized; treat as a
+            research backlog item.
+          </li>
+          <li>
+            <strong className="text-fountain-dark dark:text-white">Active</strong> — Operational / active handling per
+            internal notes (see table).
+          </li>
+        </ul>
+        <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+          Primary reference:{' '}
+          <a
+            href={CSR_DEA_SOURCE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal-600 dark:text-teal-400 underline font-medium"
+          >
+            DEA — State practitioner licensing requirements
+          </a>
+          .
+        </p>
+      </details>
 
       {/* Category Filter Buttons */}
       <div className="mb-4">
@@ -265,6 +335,7 @@ export function CSRMap() {
         </div>
         <div className="flex flex-wrap justify-center gap-2 px-4">
           <button
+            type="button"
             onClick={() => setCategoryFilter('all')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
               categoryFilter === 'all'
@@ -277,6 +348,7 @@ export function CSRMap() {
           {(['controlled', 'nonControlled', 'tbd', 'active'] as CSRCategory[]).map(category => (
             <button
               key={category}
+              type="button"
               onClick={() => setCategoryFilter(category)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                 categoryFilter === category
@@ -296,6 +368,22 @@ export function CSRMap() {
             </button>
           ))}
         </div>
+        <div className="flex justify-center mt-3">
+          <button
+            type="button"
+            onClick={() => {
+              setCategoryFilter('tbd');
+              setProviderTypeFilter('all');
+            }}
+            className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all ${
+              categoryFilter === 'tbd' && providerTypeFilter === 'all'
+                ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100'
+                : 'border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 hover:bg-amber-50/80 dark:hover:bg-amber-900/20'
+            }`}
+          >
+            TBD backlog only ({stats.tbd} states)
+          </button>
+        </div>
       </div>
 
       {/* Provider Type Filter Buttons */}
@@ -305,6 +393,7 @@ export function CSRMap() {
         </div>
         <div className="flex flex-wrap justify-center gap-2 px-4">
           <button
+            type="button"
             onClick={() => setProviderTypeFilter('all')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
               providerTypeFilter === 'all'
@@ -315,6 +404,7 @@ export function CSRMap() {
             All Providers
           </button>
           <button
+            type="button"
             onClick={() => setProviderTypeFilter('md')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
               providerTypeFilter === 'md'
@@ -333,6 +423,7 @@ export function CSRMap() {
             <span className="text-xs opacity-75">({stats.md})</span>
           </button>
           <button
+            type="button"
             onClick={() => setProviderTypeFilter('np')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
               providerTypeFilter === 'np'
@@ -390,10 +481,11 @@ export function CSRMap() {
       </div>
 
       {/* Map */}
-      <div className="relative w-full max-w-5xl mx-auto px-2 sm:px-4">
+      <div id="csr-map" className="relative w-full max-w-5xl mx-auto px-2 sm:px-4">
         {/* Zoom Controls */}
-        <div className="absolute top-2 right-2 sm:right-6 z-30 flex flex-col gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="print-hide absolute top-2 right-2 sm:right-6 z-30 flex flex-col gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           <button
+            type="button"
             onClick={handleZoomIn}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             title="Zoom in"
@@ -404,6 +496,7 @@ export function CSRMap() {
           </button>
           <div className="border-t border-gray-200 dark:border-gray-700" />
           <button
+            type="button"
             onClick={handleZoomOut}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             title="Zoom out"
@@ -416,6 +509,7 @@ export function CSRMap() {
             <>
               <div className="border-t border-gray-200 dark:border-gray-700" />
               <button
+                type="button"
                 onClick={handleResetZoom}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title="Reset zoom"
@@ -430,7 +524,7 @@ export function CSRMap() {
 
         {/* Zoom indicator */}
         {mapZoom > 1 && (
-          <div className="absolute top-2 left-2 sm:left-6 z-30 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
+          <div className="print-hide absolute top-2 left-2 sm:left-6 z-30 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
             {Math.round(mapZoom * 100)}%
           </div>
         )}
@@ -447,13 +541,15 @@ export function CSRMap() {
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
         >
-          <div
-            style={{
-              transform: `scale(${mapZoom}) translate(${mapPosition.x / mapZoom}px, ${mapPosition.y / mapZoom}px)`,
-              transformOrigin: 'center center',
-              transition: isDragging ? 'none' : 'transform 0.3s ease',
-            }}
-          >
+        <div
+          style={{
+            transform: `scale(${mapZoom}) translate(${mapPosition.x / mapZoom}px, ${mapPosition.y / mapZoom}px)`,
+            transformOrigin: 'center center',
+            transition: isDragging ? 'none' : 'transform 0.3s ease',
+          }}
+          role="region"
+          aria-label="CSR licensing map by state"
+        >
             <ComposableMap
               projection="geoAlbersUsa"
               projectionConfig={{
@@ -473,12 +569,14 @@ export function CSRMap() {
                           key={geo.rsmKey}
                           geography={geo}
                           fill={fillColor}
-                          stroke="#ffffff"
-                          strokeWidth={isMobile ? 1.25 : 0.75}
+                          stroke={highlightedStateId === stateId ? '#f59e0b' : '#ffffff'}
+                          strokeWidth={
+                            highlightedStateId === stateId ? 2.5 : isMobile ? 1.25 : 0.75
+                          }
                           style={{
                             default: {
                               outline: 'none',
-                              transition: 'fill 0.3s ease',
+                              transition: 'fill 0.3s ease, stroke 0.2s ease',
                             },
                             hover: {
                               fill: highlighted ? fillColor : '#9CA3AF',
@@ -493,6 +591,9 @@ export function CSRMap() {
                           onMouseEnter={(e) => handleMouseEnter(e, stateId)}
                           onMouseLeave={handleMouseLeave}
                           onMouseMove={handleMouseMove}
+                          onClick={() => {
+                            if (highlighted) setHighlightedStateId(stateId);
+                          }}
                         />
                       );
                     })}
@@ -567,9 +668,10 @@ export function CSRMap() {
         </div>
       </div>
 
-      {/* Download CSV Button */}
-      <div className="flex justify-center mt-6 px-4">
+      {/* Download */}
+      <div className="flex flex-wrap justify-center gap-3 mt-6 px-4">
         <button
+          type="button"
           onClick={downloadCSV}
           className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
         >
@@ -577,6 +679,16 @@ export function CSRMap() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Download CSR Data (CSV)
+        </button>
+        <button
+          type="button"
+          onClick={downloadJSON}
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download CSR Data (JSON)
         </button>
       </div>
 
@@ -603,17 +715,21 @@ export function CSRMap() {
               </div>
               <div className="space-y-2">
                 {CSR_DATA.controlled.map(({ stateId, providerType, licenseRequirement, notes }) => (
-                  <div
+                  <button
+                    type="button"
                     key={`${stateId}-controlled`}
-                    className="px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20"
+                    onClick={() => focusStateFromList(stateId)}
+                    className={`w-full text-left px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-fountain-trt dark:focus-visible:ring-offset-gray-900 ${
+                      highlightedStateId === stateId ? 'ring-2 ring-amber-400 ring-offset-1 dark:ring-offset-gray-900' : ''
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                         {getStateName(stateId)}
                         {notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({notes})</span>}
                       </span>
                       <span
-                        className="text-xs font-bold px-2 py-1 rounded"
+                        className="text-xs font-bold px-2 py-1 rounded shrink-0"
                         style={{ backgroundColor: CSR_COLORS.controlled, color: 'white' }}
                       >
                         {providerType}
@@ -622,7 +738,7 @@ export function CSRMap() {
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {licenseRequirement}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -640,25 +756,27 @@ export function CSRMap() {
               </div>
               <div className="space-y-2">
                 {CSR_DATA.nonControlled.map(({ stateId, providerType, licenseRequirement, notes }) => (
-                  <div
+                  <button
+                    type="button"
                     key={`${stateId}-nonControlled`}
-                    className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700/30"
+                    onClick={() => focusStateFromList(stateId)}
+                    className={`w-full text-left px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700/30 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-fountain-trt dark:focus-visible:ring-offset-gray-900 ${
+                      highlightedStateId === stateId ? 'ring-2 ring-amber-400 ring-offset-1 dark:ring-offset-gray-900' : ''
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                         {getStateName(stateId)}
                         {notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({notes})</span>}
                       </span>
-                      <span
-                        className="text-xs font-bold px-2 py-1 rounded bg-gray-500 text-white"
-                      >
+                      <span className="text-xs font-bold px-2 py-1 rounded bg-gray-500 text-white shrink-0">
                         {providerType}
                       </span>
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {licenseRequirement}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -676,16 +794,20 @@ export function CSRMap() {
               </div>
               <div className="space-y-2">
                 {CSR_DATA.tbd.map(({ stateId, licenseRequirement }) => (
-                  <div
+                  <button
+                    type="button"
                     key={stateId}
-                    className="px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20"
+                    onClick={() => focusStateFromList(stateId)}
+                    className={`w-full text-left px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-fountain-trt dark:focus-visible:ring-offset-gray-900 ${
+                      highlightedStateId === stateId ? 'ring-2 ring-amber-400 ring-offset-1 dark:ring-offset-gray-900' : ''
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                         {getStateName(stateId)}
                       </span>
                       <span
-                        className="text-xs font-bold px-2 py-1 rounded"
+                        className="text-xs font-bold px-2 py-1 rounded shrink-0"
                         style={{ backgroundColor: CSR_COLORS.tbd, color: 'white' }}
                       >
                         TBD
@@ -694,7 +816,7 @@ export function CSRMap() {
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {licenseRequirement}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -712,11 +834,15 @@ export function CSRMap() {
               </div>
               <div className="space-y-2">
                 {CSR_DATA.active.map(({ stateId, licenseRequirement, notes }) => (
-                  <div
+                  <button
+                    type="button"
                     key={stateId}
-                    className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"
+                    onClick={() => focusStateFromList(stateId)}
+                    className={`w-full text-left px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-fountain-trt dark:focus-visible:ring-offset-gray-900 ${
+                      highlightedStateId === stateId ? 'ring-2 ring-amber-400 ring-offset-1 dark:ring-offset-gray-900' : ''
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                         {getStateName(stateId)}
                         {notes && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({notes})</span>}
@@ -725,7 +851,7 @@ export function CSRMap() {
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {licenseRequirement}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>

@@ -85,9 +85,10 @@ function AppContent() {
     setViewMode(mode);
     const url = new URL(window.location.href);
     url.searchParams.set('view', mode);
-    // Clear map param when leaving licensing view
     if (mode !== 'licensing') {
       url.searchParams.delete('map');
+      url.searchParams.delete('csrCategory');
+      url.searchParams.delete('csrProvider');
     }
     window.history.replaceState({}, '', url.toString());
   };
