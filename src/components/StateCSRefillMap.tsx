@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { getStateName } from '../data/serviceAvailability';
 import { STATE_CS_REFILL_ROWS, type StateCSRefillRow } from '../data/stateCSRefillData';
-import { DATA_LAST_UPDATED } from '../data/dataMeta';
 import { LicensingUsAlbersMap } from './LicensingUsAlbersMap';
 
 const COLOR_STANDARD = '#6366f1';
@@ -130,7 +129,6 @@ export function StateCSRefillMap() {
         <p className="text-gray-600 dark:text-gray-400 mt-2 max-w-2xl mx-auto text-sm sm:text-base">
           Prescription and refill restrictions for controlled substances by state (summarized from internal tracker).
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">Data last synced with app: {DATA_LAST_UPDATED}</p>
       </div>
 
       <div className="flex flex-wrap justify-center gap-4 mb-6 text-sm">
@@ -185,8 +183,13 @@ export function StateCSRefillMap() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="State, restriction text, notes…"
-          className="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-fountain-dark dark:text-white mb-4"
+          className="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-fountain-dark dark:text-white mb-2"
         />
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Showing <strong className="text-fountain-dark dark:text-white">{filteredRows.length}</strong> of{' '}
+          {STATE_CS_REFILL_ROWS.length} rows
+          {search.trim() && <span className="text-gray-500"> — search active</span>}
+        </p>
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
             <table className="w-full text-sm text-left">
@@ -198,6 +201,13 @@ export function StateCSRefillMap() {
                 </tr>
               </thead>
               <tbody>
+                {filteredRows.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
+                      No rows match your search. Clear the search box to see all states.
+                    </td>
+                  </tr>
+                )}
                 {filteredRows.map((r) => (
                   <tr
                     key={r.stateId}

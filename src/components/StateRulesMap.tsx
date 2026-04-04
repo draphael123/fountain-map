@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { getStateName } from '../data/serviceAvailability';
 import { STATE_RULES_ROWS, type StateRuleRow } from '../data/stateRulesData';
-import { DATA_LAST_UPDATED } from '../data/dataMeta';
 import { LicensingUsAlbersMap } from './LicensingUsAlbersMap';
 
 const COLOR_YES = '#0d9488';
@@ -145,7 +144,6 @@ export function StateRulesMap() {
         <p className="text-gray-600 dark:text-gray-400 mt-2 max-w-2xl mx-auto text-sm sm:text-base">
           Compact, operational status, required steps, DEA CSR and CPA flags by state (internal reference).
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">Data last synced with app: {DATA_LAST_UPDATED}</p>
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -230,8 +228,15 @@ export function StateRulesMap() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="State, steps, notes…"
-          className="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-fountain-dark dark:text-white mb-4"
+          className="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-fountain-dark dark:text-white mb-2"
         />
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Showing <strong className="text-fountain-dark dark:text-white">{filteredRows.length}</strong> of{' '}
+          {STATE_RULES_ROWS.length} states
+          {(opFilter !== 'all' || compactFilter !== 'all' || search.trim()) && (
+            <span className="text-gray-500"> — filters and/or search applied</span>
+          )}
+        </p>
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto max-h-[480px] overflow-y-auto">
             <table className="w-full text-sm text-left">
@@ -246,6 +251,14 @@ export function StateRulesMap() {
                 </tr>
               </thead>
               <tbody>
+                {filteredRows.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-3 py-8 text-center text-gray-500 dark:text-gray-400">
+                      No states match these filters and search. Try setting Operational and Nurse compact to &quot;All&quot;
+                      or clear search.
+                    </td>
+                  </tr>
+                )}
                 {filteredRows.map((r) => (
                   <tr
                     key={r.stateId}

@@ -6,7 +6,7 @@ import {
   Marker,
   Annotation,
 } from 'react-simple-maps';
-import { getStateName } from '../data/serviceAvailability';
+import { getStateName, US_STATES } from '../data/serviceAvailability';
 import { GEO_URL, FIPS_TO_STATE, STATE_CENTERS, SMALL_STATES } from '../data/usMapGeo';
 import { DATA_LAST_UPDATED, CSR_DATA_REVIEW_NOTE } from '../data/dataMeta';
 import {
@@ -195,6 +195,11 @@ export function CSRMap() {
     ...countStatesByProviderType(),
   }), []);
 
+  const csrFilteredStateCount = useMemo(
+    () => US_STATES.filter((s) => stateMatchesFilters(s.id)).length,
+    [stateMatchesFilters]
+  );
+
   useEffect(() => {
     const url = new URL(window.location.href);
     if (categoryFilter === 'all') url.searchParams.delete('csrCategory');
@@ -283,9 +288,7 @@ export function CSRMap() {
         <p className="text-gray-600 dark:text-gray-400 mt-2">
           Customer Service Representative (DEA CSR registration) requirements by state
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 max-w-2xl mx-auto">
-          Data last synced with app: {DATA_LAST_UPDATED}. {CSR_DATA_REVIEW_NOTE}
-        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 max-w-2xl mx-auto">{CSR_DATA_REVIEW_NOTE}</p>
       </div>
 
       {/* Glossary */}
@@ -479,6 +482,11 @@ export function CSRMap() {
           <span className="text-sm text-gray-500">No Requirements / Filtered Out</span>
         </div>
       </div>
+
+      <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4 px-4">
+        <strong className="text-fountain-dark dark:text-gray-200">{csrFilteredStateCount}</strong> states match current
+        filters ({US_STATES.length} jurisdictions on the map, including D.C.)
+      </p>
 
       {/* Map */}
       <div id="csr-map" className="relative w-full max-w-5xl mx-auto px-2 sm:px-4">
