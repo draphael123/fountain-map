@@ -7,7 +7,6 @@ import { UpdateBanner } from './components/UpdateBanner';
 import { CheckMyState } from './components/CheckMyState';
 import { MobileStateSelector } from './components/MobileStateSelector';
 import { MapSkeleton } from './components/MapSkeleton';
-import { ProviderAuthorityMap } from './components/ProviderAuthorityMap';
 import { RegionalSummary } from './components/RegionalSummary';
 import { Statistics } from './components/Statistics';
 import { StateComparison } from './components/StateComparison';
@@ -47,8 +46,8 @@ function AppContent() {
     const params = new URLSearchParams(window.location.search);
     const serviceParam = params.get('service')?.toUpperCase();
     const stateParam = params.get('state')?.toUpperCase();
-    const viewParam = params.get('view');
-    const mapParam = params.get('map')?.toLowerCase();
+    let viewParam = params.get('view')?.toLowerCase() ?? '';
+    let mapParam = params.get('map')?.toLowerCase();
 
     if (serviceParam && ['TRT', 'HRT', 'GLP', 'PLANNING', 'ASYNC'].includes(serviceParam)) {
       setSelectedService(
@@ -58,12 +57,22 @@ function AppContent() {
       );
     }
 
-    if (viewParam && ['single', 'multi', 'provider', 'stats', 'compare', 'licensing'].includes(viewParam)) {
+    if (viewParam === 'provider') {
+      setViewMode('licensing');
+      setLicensingMap('provider-authority');
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', 'licensing');
+      url.searchParams.set('map', 'provider-authority');
+      window.history.replaceState({}, '', url.toString());
+      viewParam = 'licensing';
+      mapParam = 'provider-authority';
+    }
+
+    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
 
-    // Handle licensing map parameter
-    if (mapParam && LICENSING_MAPS.some(m => m.id === mapParam)) {
+    if (mapParam && LICENSING_MAPS.some((m) => m.id === mapParam)) {
       setLicensingMap(mapParam as LicensingMapType);
     }
 
@@ -154,12 +163,6 @@ function AppContent() {
           {viewMode === 'stats' && (
             <div key="stats" className="view-transition-item">
               <Statistics />
-            </div>
-          )}
-
-          {viewMode === 'provider' && (
-            <div key="provider" className="view-transition-item">
-              <ProviderAuthorityMap />
             </div>
           )}
 

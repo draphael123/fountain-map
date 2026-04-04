@@ -4,7 +4,7 @@ import { PrintButton } from './PrintButton';
 import { ColorblindToggle } from './ColorblindToggle';
 import { useTheme } from '../context/ThemeContext';
 
-export type ViewMode = 'single' | 'multi' | 'provider' | 'stats' | 'compare' | 'licensing';
+export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing';
 
 interface HeaderProps {
   selectedService: ServiceType;
@@ -62,7 +62,6 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
                 { id: 'multi', label: 'Coverage', shortLabel: 'Coverage', icon: '📊' },
                 { id: 'compare', label: 'Compare States', shortLabel: 'Compare', icon: '⚖️' },
                 { id: 'stats', label: 'Statistics', shortLabel: 'Stats', icon: '📈' },
-                { id: 'provider', label: 'Provider Authority Map', shortLabel: 'Providers', icon: '👤' },
                 { id: 'licensing', label: 'Licensing', shortLabel: 'Licensing', icon: '📋' },
               ].map(({ id, label, shortLabel, icon }) => (
                 <button
