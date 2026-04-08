@@ -11,6 +11,7 @@ import { RegionalSummary } from './components/RegionalSummary';
 import { Statistics } from './components/Statistics';
 import { StateComparison } from './components/StateComparison';
 import { Licensing, type LicensingMapType, LICENSING_MAPS } from './components/Licensing';
+import { CostForecaster } from './components/CostForecaster';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
 
@@ -68,7 +69,7 @@ function AppContent() {
       mapParam = 'provider-authority';
     }
 
-    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing'].includes(viewParam)) {
+    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing', 'costs'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
 
@@ -172,6 +173,12 @@ function AppContent() {
                 initialMap={licensingMap}
                 onMapChange={handleLicensingMapChange}
               />
+            </div>
+          )}
+
+          {viewMode === 'costs' && (
+            <div key="costs" className="view-transition-item">
+              <CostForecaster />
             </div>
           )}
         </div>
