@@ -5,7 +5,7 @@ import { PrintButton } from './PrintButton';
 import { ColorblindToggle } from './ColorblindToggle';
 import { useTheme } from '../context/ThemeContext';
 
-export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing' | 'costs';
+export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing';
 
 const VIEW_TABS: { id: ViewMode; label: string; shortLabel: string; icon: string }[] = [
   { id: 'single', label: 'Service Map', shortLabel: 'Services', icon: '🗺️' },
@@ -13,7 +13,6 @@ const VIEW_TABS: { id: ViewMode; label: string; shortLabel: string; icon: string
   { id: 'compare', label: 'Compare States', shortLabel: 'Compare', icon: '⚖️' },
   { id: 'stats', label: 'Statistics', shortLabel: 'Stats', icon: '📈' },
   { id: 'licensing', label: 'Licensing', shortLabel: 'Licensing', icon: '📋' },
-  { id: 'costs', label: 'Cost Forecaster', shortLabel: 'Costs', icon: '💰' },
 ];
 
 const PRIMARY_TAB_IDS = new Set<ViewMode>(['single', 'multi', 'licensing']);
@@ -44,7 +43,7 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
     return () => document.removeEventListener('mousedown', handle);
   }, [moreOpen]);
 
-  const overflowActive = viewMode === 'compare' || viewMode === 'stats' || viewMode === 'costs';
+  const overflowActive = viewMode === 'compare' || viewMode === 'stats';
   const primaryTabs = VIEW_TABS.filter((t) => PRIMARY_TAB_IDS.has(t.id));
   const overflowTabs = VIEW_TABS.filter((t) => !PRIMARY_TAB_IDS.has(t.id));
 
