@@ -69,7 +69,6 @@ export const CSR_DATA: CSRData = {
   active: [
     { stateId: 'CA', licenseRequirement: 'One License', notes: 'Furnishing license' },
     { stateId: 'CO', licenseRequirement: 'One License', notes: 'RX Authority' },
-    { stateId: 'GU', licenseRequirement: 'Two Licenses' },
     { stateId: 'ID', licenseRequirement: 'Two Licenses' },
     { stateId: 'IL', licenseRequirement: 'Two Licenses' },
     { stateId: 'IN', licenseRequirement: 'Two Licenses' },
