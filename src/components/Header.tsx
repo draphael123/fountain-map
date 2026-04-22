@@ -4,6 +4,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { PrintButton } from './PrintButton';
 import { ColorblindToggle } from './ColorblindToggle';
 import { useTheme } from '../context/ThemeContext';
+import { DATA_LAST_UPDATED, UPDATE_NOTES } from '../data/dataMeta';
 
 export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing';
 
@@ -29,19 +30,24 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
   const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Async', 'Planning'];
   const { colorblindMode } = useTheme();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [updateTooltipOpen, setUpdateTooltipOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+  const updateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handle = (e: MouseEvent) => {
       if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
         setMoreOpen(false);
       }
+      if (updateRef.current && !updateRef.current.contains(e.target as Node)) {
+        setUpdateTooltipOpen(false);
+      }
     };
-    if (moreOpen) {
+    if (moreOpen || updateTooltipOpen) {
       document.addEventListener('mousedown', handle);
     }
     return () => document.removeEventListener('mousedown', handle);
-  }, [moreOpen]);
+  }, [moreOpen, updateTooltipOpen]);
 
   const overflowActive = viewMode === 'compare' || viewMode === 'stats';
   const primaryTabs = VIEW_TABS.filter((t) => PRIMARY_TAB_IDS.has(t.id));
@@ -76,6 +82,40 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
               <img src="/fountain-logo.png" alt="Fountain Vitality" className="h-8 sm:h-10 w-auto" />
             </div>
             <div className="flex-1 flex justify-end items-center gap-2">
+              {/* Last Updated Badge */}
+              <div className="relative" ref={updateRef}>
+                <button
+                  type="button"
+                  onClick={() => setUpdateTooltipOpen((o) => !o)}
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 text-gray-300 hover:bg-white/20 transition-colors"
+                  title="View update details"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="hidden sm:inline">Updated:</span>
+                  <span>{DATA_LAST_UPDATED}</span>
+                </button>
+                {updateTooltipOpen && (
+                  <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-lg bg-white text-fountain-dark shadow-xl border border-gray-200 z-[100] p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-fountain-trt" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span className="font-semibold text-sm">Latest Update</span>
+                      <span className="text-xs text-gray-500">({DATA_LAST_UPDATED})</span>
+                    </div>
+                    <ul className="text-xs text-gray-600 space-y-1">
+                      {UPDATE_NOTES.map((note, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-fountain-trt mt-0.5">•</span>
+                          <span>{note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
               {onSearchClick && (
                 <button
                   type="button"
