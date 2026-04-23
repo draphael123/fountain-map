@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fountain Async</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/topojson.v3.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      border: 4px solid #4a7c3f;
+      padding: 20px;
+      background: #fff;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      color: #2d5a3d;
+      font-size: 36px;
+      font-weight: bold;
+    }
+    .header h1 span { font-weight: normal; }
+    .map-container { position: relative; }
+    #map { width: 100%; }
+    .legend {
+      position: absolute;
+      bottom: 60px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 16px; height: 16px; }
+    .tier1-dot { background: #4CAF50; }
+    .tier2-dot { background: #E8DC5B; }
+
+    .state { stroke: #fff; stroke-width: 1; }
+    .state:hover { opacity: 0.8; cursor: pointer; }
+    .state-label {
+      font-size: 10px;
+      font-weight: bold;
+      fill: #333;
+      pointer-events: none;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <svg width="50" height="50" viewBox="0 0 100 100">
+        <ellipse cx="50" cy="20" rx="10" ry="15" fill="#2196F3"/>
+        <ellipse cx="35" cy="40" rx="8" ry="14" fill="#4CAF50" transform="rotate(-25 35 40)"/>
+        <ellipse cx="65" cy="40" rx="8" ry="14" fill="#4CAF50" transform="rotate(25 65 40)"/>
+        <ellipse cx="22" cy="62" rx="7" ry="12" fill="#81C784" transform="rotate(-40 22 62)"/>
+        <ellipse cx="78" cy="62" rx="7" ry="12" fill="#81C784" transform="rotate(40 78 62)"/>
+      </svg>
+      <h1>Fountain <span>Async</span></h1>
+    </div>
+    <div class="map-container">
+      <svg id="map"></svg>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot tier1-dot"></div> Tier 1 active</div>
+        <div class="legend-item"><div class="legend-dot tier2-dot"></div> Tier 2 active</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// =====================================================
+// STATE TIER CONFIGURATION - Edit this to update tiers
+// =====================================================
+const stateTiers = {
+  // Tier 1 (Green)
+  'Washington': 1, 'California': 1, 'Michigan': 1, 'New York': 1,
+  'Pennsylvania': 1, 'Ohio': 1, 'Virginia': 1, 'North Carolina': 1,
+  'Florida': 1, 'New Jersey': 1, 'Connecticut': 1, 'Massachusetts': 1,
+  'Maine': 1, 'Maryland': 1, 'Delaware': 1, 'Rhode Island': 1,
+
+  // Tier 2 (Yellow)
+  'Oregon': 2, 'Nevada': 2, 'Idaho': 2, 'Montana': 2, 'Wyoming': 2,
+  'Utah': 2, 'Arizona': 2, 'New Mexico': 2, 'Colorado': 2,
+  'North Dakota': 2, 'South Dakota': 2, 'Nebraska': 2, 'Kansas': 2,
+  'Oklahoma': 2, 'Texas': 2, 'Minnesota': 2, 'Iowa': 2, 'Wisconsin': 2,
+  'Indiana': 2, 'Missouri': 2  // MO added as Tier 2
+};
+
+const colors = {
+  tier1: '#4CAF50',
+  tier2: '#E8DC5B',
+  inactive: '#D3D3D3'
+};
+
+function getStateColor(name) {
+  const tier = stateTiers[name];
+  if (tier === 1) return colors.tier1;
+  if (tier === 2) return colors.tier2;
+  return colors.inactive;
+}
+
+// Set up dimensions
+const width = 960;
+const height = 600;
+
+const svg = d3.select("#map")
+  .attr("viewBox", `0 0 ${width} ${height}`)
+  .attr("preserveAspectRatio", "xMidYMid meet");
+
+// Load and render the map
+d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
+  const states = topojson.feature(us, us.objects.states);
+
+  const projection = d3.geoAlbersUsa()
+    .fitSize([width, height], states);
+
+  const path = d3.geoPath().projection(projection);
+
+  // Draw states
+  svg.selectAll("path")
+    .data(states.features)
+    .enter()
+    .append("path")
+    .attr("class", "state")
+    .attr("d", path)
+    .attr("fill", d => getStateColor(d.properties.name))
+    .append("title")
+    .text(d => d.properties.name);
+
+  // Add state labels
+  const labelData = [
+    { id: "WA", coords: [-120.5, 47.5] },
+    { id: "OR", coords: [-120.5, 44] },
+    { id: "CA", coords: [-119.5, 37] },
+    { id: "NV", coords: [-117, 39] },
+    { id: "ID", coords: [-114.5, 44.5] },
+    { id: "MT", coords: [-110, 47] },
+    { id: "WY", coords: [-107.5, 43] },
+    { id: "UT", coords: [-111.5, 39.5] },
+    { id: "AZ", coords: [-111.5, 34.5] },
+    { id: "NM", coords: [-106, 34.5] },
+    { id: "CO", coords: [-105.5, 39] },
+    { id: "ND", coords: [-100.5, 47.5] },
+    { id: "SD", coords: [-100, 44.5] },
+    { id: "NE", coords: [-100, 41.5] },
+    { id: "KS", coords: [-98.5, 38.5] },
+    { id: "OK", coords: [-97.5, 35.5] },
+    { id: "TX", coords: [-99.5, 31.5] },
+    { id: "MN", coords: [-94.5, 46] },
+    { id: "IA", coords: [-93.5, 42] },
+    { id: "MO", coords: [-92.5, 38.5] },
+    { id: "AR", coords: [-92.5, 35] },
+    { id: "LA", coords: [-92, 31] },
+    { id: "WI", coords: [-89.5, 44.5] },
+    { id: "IL", coords: [-89, 40] },
+    { id: "IN", coords: [-86, 40] },
+    { id: "MI", coords: [-85, 44] },
+    { id: "OH", coords: [-82.5, 40.5] },
+    { id: "KY", coords: [-85, 37.5] },
+    { id: "TN", coords: [-86, 36] },
+    { id: "MS", coords: [-89.5, 33] },
+    { id: "AL", coords: [-86.5, 33] },
+    { id: "GA", coords: [-83, 33] },
+    { id: "FL", coords: [-81.5, 28.5] },
+    { id: "SC", coords: [-80.5, 34] },
+    { id: "NC", coords: [-79.5, 35.5] },
+    { id: "VA", coords: [-78.5, 37.5] },
+    { id: "WV", coords: [-80.5, 39] },
+    { id: "PA", coords: [-77.5, 41] },
+    { id: "NY", coords: [-75.5, 43] },
+    { id: "VT", coords: [-72.5, 44] },
+    { id: "NH", coords: [-71.5, 44] },
+    { id: "ME", coords: [-69, 45.5] },
+    { id: "MA", coords: [-71.5, 42.3] },
+    { id: "RI", coords: [-71.5, 41.7] },
+    { id: "CT", coords: [-72.7, 41.6] },
+    { id: "NJ", coords: [-74.5, 40.2] },
+    { id: "DE", coords: [-75.5, 39] },
+    { id: "MD", coords: [-76.5, 39.2] },
+    { id: "AK", coords: [-153, 64] },
+    { id: "HI", coords: [-157, 20] }
+  ];
+
+  svg.selectAll("text")
+    .data(labelData)
+    .enter()
+    .append("text")
+    .attr("class", "state-label")
+    .attr("x", d => {
+      const p = projection(d.coords);
+      return p ? p[0] : 0;
+    })
+    .attr("y", d => {
+      const p = projection(d.coords);
+      return p ? p[1] : 0;
+    })
+    .text(d => d.id)
+    .style("display", d => projection(d.coords) ? "block" : "none");
+}).catch(err => {
+  console.error("Error loading map:", err);
+  document.getElementById("map").innerHTML = "<text x='50%' y='50%' text-anchor='middle'>Error loading map. Please check your internet connection.</text>";
+});
+</script>
+</body>
+</html>
