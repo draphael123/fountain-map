@@ -1,5 +1,5 @@
 /** Last date service availability and provider licensing data were updated */
-export const DATA_LAST_UPDATED = '2026-04-22';
+export const DATA_LAST_UPDATED = '2026-04-28';
 
 /** Shown on CSR licensing map for compliance context */
 export const CSR_DATA_REVIEW_NOTE =
@@ -7,7 +7,7 @@ export const CSR_DATA_REVIEW_NOTE =
 
 /** What was updated in this release (shown in footer) */
 export const UPDATE_NOTES: string[] = [
-  'Updated state licensing rules and CSR data from compliance dashboard',
-  'Key changes: AK now MD-only, AR/OK CPA now conditional, OH added CPA requirement',
-  'Removed Guam from CSR active states',
+  'Updated service availability from Provider Licensing Report (4/28)',
+  'TRT: 23 states active (was 32), HRT: 11 states active (was 32), GLP: 24 states active',
+  'Providers: Added Nicole Tahira Perrotte; Removed Skye Sauls',
 ];

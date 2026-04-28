@@ -103,26 +103,26 @@ export const US_STATES: StateInfo[] = [
 ];
 
 // Service availability data extracted from the source spreadsheet
+// Updated 2026-04-28 from Provider Licensing by State / Availability Report
 export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
-  // 32 states active (added WY, MA to original 30)
+  // 23 states active (Promoting or Open status)
   TRT: [
-    'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'MA', 'MD', 'ME', 'MI', 'MN', 'MT', 'NC', 'ND',
-    'NE', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OR', 'PA', 'SD', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WY'
+    'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'MD', 'ME', 'MI', 'MT', 'NC',
+    'NE', 'NJ', 'NM', 'NY', 'OH', 'PA', 'TX', 'VA', 'WA', 'WI'
   ],
 
   // FountainHRT - Hormone Replacement Therapy (Pink states)
-  // 32 states active (added WY, MA to original 30)
+  // 11 states active (Promoting or Open status)
   HRT: [
-    'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'MA', 'MD', 'ME', 'MI', 'MN', 'MT', 'NC', 'ND',
-    'NE', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OR', 'PA', 'SD', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WY'
+    'AZ', 'CA', 'FL', 'MD', 'MI', 'NJ', 'NY', 'OH', 'TX', 'VA', 'WA'
   ],
 
   // FountainGLP - GLP-1 Weight Loss (Purple states)
-  // 30 states active
+  // 24 states active (Open status)
   GLP: [
-    'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'KY', 'MD', 'ME', 'MI', 'MN', 'MT', 'NC', 'ND',
-    'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OR', 'PA', 'TX', 'UT', 'VT', 'WA', 'WI'
+    'AZ', 'CA', 'CO', 'CT', 'FL', 'IA', 'ID', 'IL', 'IN', 'KY', 'MD', 'MI', 'MT',
+    'NC', 'NE', 'NH', 'NJ', 'NY', 'OH', 'PA', 'TX', 'VA', 'WA', 'WI'
   ],
 
   // Fountain State Planning (Blue states)
