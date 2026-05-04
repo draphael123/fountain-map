@@ -106,10 +106,10 @@ export const US_STATES: StateInfo[] = [
 // Updated 2026-04-28 from Provider Licensing by State / Availability Report
 export const SERVICE_AVAILABILITY: Record<ServiceType, string[]> = {
   // FountainTRT - Testosterone Replacement Therapy (Teal states)
-  // 23 states active (Promoting or Open status)
+  // 24 states active (added TN)
   TRT: [
     'AZ', 'CA', 'CO', 'FL', 'IA', 'ID', 'IL', 'IN', 'MD', 'ME', 'MI', 'MT', 'NC',
-    'NE', 'NJ', 'NM', 'NY', 'OH', 'PA', 'TX', 'VA', 'WA', 'WI'
+    'NE', 'NJ', 'NM', 'NY', 'OH', 'PA', 'TN', 'TX', 'VA', 'WA', 'WI'
   ],
 
   // FountainHRT - Hormone Replacement Therapy (Pink states)
