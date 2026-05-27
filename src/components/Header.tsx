@@ -6,7 +6,7 @@ import { ColorblindToggle } from './ColorblindToggle';
 import { useTheme } from '../context/ThemeContext';
 import { DATA_LAST_UPDATED, UPDATE_NOTES } from '../data/dataMeta';
 
-export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing' | 'capacity' | 'gaps';
+export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing' | 'capacity' | 'gaps' | 'rn-licensing' | 'offices';
 
 const VIEW_TABS: { id: ViewMode; label: string; shortLabel: string; icon: string }[] = [
   { id: 'single', label: 'Service Map', shortLabel: 'Services', icon: '🗺️' },
@@ -16,6 +16,8 @@ const VIEW_TABS: { id: ViewMode; label: string; shortLabel: string; icon: string
   { id: 'compare', label: 'Compare States', shortLabel: 'Compare', icon: '⚖️' },
   { id: 'stats', label: 'Statistics', shortLabel: 'Stats', icon: '📈' },
   { id: 'licensing', label: 'Licensing', shortLabel: 'Licensing', icon: '📋' },
+  { id: 'rn-licensing', label: 'RN Licensing', shortLabel: 'RNs', icon: '👩‍⚕️' },
+  { id: 'offices', label: 'Office Locations', shortLabel: 'Offices', icon: '🏢' },
 ];
 
 const PRIMARY_TAB_IDS = new Set<ViewMode>(['single', 'multi', 'capacity', 'gaps', 'licensing']);

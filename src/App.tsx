@@ -17,6 +17,8 @@ import { CapacityMap } from './components/CapacityMap';
 import { CoverageGapsMap } from './components/CoverageGapsMap';
 import { ChangelogPanel } from './components/ChangelogPanel';
 import { ExportModal } from './components/ExportModal';
+import { RNLicensingMap } from './components/RNLicensingMap';
+import { OfficeLocationsMap } from './components/OfficeLocationsMap';
 
 // Lazy load the map for better initial load performance
 const USMap = lazy(() => import('./components/USMap').then(module => ({ default: module.USMap })));
@@ -74,7 +76,7 @@ function AppContent() {
       mapParam = 'provider-authority';
     }
 
-    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing', 'capacity', 'gaps'].includes(viewParam)) {
+    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing', 'capacity', 'gaps', 'rn-licensing', 'offices'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
 
@@ -191,6 +193,22 @@ function AppContent() {
                 initialMap={licensingMap}
                 onMapChange={handleLicensingMapChange}
               />
+            </div>
+          )}
+
+          {viewMode === 'rn-licensing' && (
+            <div key="rn-licensing" className="view-transition-item px-4">
+              <div className="text-center mb-6">
+                <h1 className="text-3xl lg:text-4xl font-bold text-fountain-dark dark:text-white">RN Licensing</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">Track RN license status and expiration dates by state</p>
+              </div>
+              <RNLicensingMap />
+            </div>
+          )}
+
+          {viewMode === 'offices' && (
+            <div key="offices" className="view-transition-item px-4">
+              <OfficeLocationsMap />
             </div>
           )}
         </div>

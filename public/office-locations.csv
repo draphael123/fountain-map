@@ -1,0 +1,10 @@
+State,StateCode,Address,IsHQ,Notes,Active
+Florida,FL,"2064 Park St, Jacksonville, FL 32204",true,,true
+Maryland,MD,"10711 Red Run Blvd, Suite 101, Owings Mills, MD 21117",false,,true
+Indiana,IN,"5724 Green Street, 2nd Floor, Brownsburg, Indiana 46112",false,,true
+Idaho,ID,"3597 E. Monarch Sky Lane, Suite 240, Meridian, Idaho 83646",false,,true
+Utah,UT,"3293 Harrison Blvd, 2nd Floor, Suite 246, Ogden, Utah 84408",false,,true
+New Mexico,NM,"500 Marquette Avenue NW, Suite 1200, Albuquerque, New Mexico 87102",false,County: Bernalillo County,true
+West Virginia,WV,"2600 Middletown Commons, 1st Floor, Unit #111, White Hall, West Virginia 26554",false,DEA will show an error on the address - proceed and they will accept it,true
+Kentucky,KY,"1040 Monarch Street, 3rd Floor, Suite 315, Lexington, KY 40513",false,,true
+New Jersey,NJ,"2564 US Highway 1, Office 107, Lawrence, NJ 08648",false,No longer active - office closed,false
