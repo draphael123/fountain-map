@@ -1,0 +1,69 @@
+{
+  "lastUpdated": "2026-05-27",
+  "entries": [
+    {
+      "date": "2026-05-27",
+      "type": "feature",
+      "title": "New Analytics Features Added",
+      "description": "Added Provider Capacity map, Coverage Gap Analysis, Changelog panel, and enhanced export functionality"
+    },
+    {
+      "date": "2026-05-04",
+      "type": "data",
+      "title": "Provider licensing data updated",
+      "description": "Updated all provider license dates and services from Provider Licensing Report",
+      "states": ["All"]
+    },
+    {
+      "date": "2026-04-28",
+      "type": "data",
+      "title": "Service availability update",
+      "description": "TRT: 23 states active, HRT: 11 states active, GLP: 24 states active. Added Nicole Tahira Perrotte; Removed Skye Sauls",
+      "services": ["TRT", "HRT", "GLP"]
+    },
+    {
+      "date": "2026-04-28",
+      "type": "service",
+      "title": "Missouri added to Async Tier 2",
+      "description": "Missouri (MO) now available for Async services at Tier 2 level",
+      "states": ["MO"],
+      "services": ["Async"]
+    },
+    {
+      "date": "2026-03-29",
+      "type": "feature",
+      "title": "Licensing maps added",
+      "description": "Added CSR Map, Provider Authority Map, State Rules Map, and CS Refills Map under Licensing tab"
+    },
+    {
+      "date": "2026-03-02",
+      "type": "feature",
+      "title": "Provider Authority Map with service filter",
+      "description": "Added ability to filter providers by service type (TRT, HRT, GLP, Async)"
+    },
+    {
+      "date": "2026-03-02",
+      "type": "feature",
+      "title": "Search/jump to state feature",
+      "description": "Added keyboard shortcut (/) to quickly search and jump to any state"
+    },
+    {
+      "date": "2026-02-27",
+      "type": "feature",
+      "title": "Multi-service coverage map",
+      "description": "Added Coverage view showing states colored by number of available services"
+    },
+    {
+      "date": "2026-02-15",
+      "type": "feature",
+      "title": "State comparison feature",
+      "description": "Added ability to compare services across multiple states side-by-side"
+    },
+    {
+      "date": "2026-02-01",
+      "type": "feature",
+      "title": "Dark mode support",
+      "description": "Added dark mode toggle with automatic theme persistence"
+    }
+  ]
+}

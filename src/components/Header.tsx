@@ -6,17 +6,19 @@ import { ColorblindToggle } from './ColorblindToggle';
 import { useTheme } from '../context/ThemeContext';
 import { DATA_LAST_UPDATED, UPDATE_NOTES } from '../data/dataMeta';
 
-export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing';
+export type ViewMode = 'single' | 'multi' | 'stats' | 'compare' | 'licensing' | 'capacity' | 'gaps';
 
 const VIEW_TABS: { id: ViewMode; label: string; shortLabel: string; icon: string }[] = [
   { id: 'single', label: 'Service Map', shortLabel: 'Services', icon: '🗺️' },
   { id: 'multi', label: 'Coverage', shortLabel: 'Coverage', icon: '📊' },
+  { id: 'capacity', label: 'Capacity', shortLabel: 'Capacity', icon: '👥' },
+  { id: 'gaps', label: 'Gaps', shortLabel: 'Gaps', icon: '⚠️' },
   { id: 'compare', label: 'Compare States', shortLabel: 'Compare', icon: '⚖️' },
   { id: 'stats', label: 'Statistics', shortLabel: 'Stats', icon: '📈' },
   { id: 'licensing', label: 'Licensing', shortLabel: 'Licensing', icon: '📋' },
 ];
 
-const PRIMARY_TAB_IDS = new Set<ViewMode>(['single', 'multi', 'licensing']);
+const PRIMARY_TAB_IDS = new Set<ViewMode>(['single', 'multi', 'capacity', 'gaps', 'licensing']);
 
 interface HeaderProps {
   selectedService: ServiceType;
@@ -24,9 +26,10 @@ interface HeaderProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   onSearchClick?: () => void;
+  onChangelogClick?: () => void;
 }
 
-export function Header({ selectedService, onServiceChange, viewMode, onViewModeChange, onSearchClick }: HeaderProps) {
+export function Header({ selectedService, onServiceChange, viewMode, onViewModeChange, onSearchClick, onChangelogClick }: HeaderProps) {
   const services: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Async', 'Planning'];
   const { colorblindMode } = useTheme();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -116,6 +119,19 @@ export function Header({ selectedService, onServiceChange, viewMode, onViewModeC
                   </div>
                 )}
               </div>
+              {onChangelogClick && (
+                <button
+                  type="button"
+                  onClick={onChangelogClick}
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-gray-300 hover:bg-white/10 transition-colors"
+                  title="View changelog"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                  <span className="hidden sm:inline">What's New</span>
+                </button>
+              )}
               {onSearchClick && (
                 <button
                   type="button"

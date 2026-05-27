@@ -17,6 +17,7 @@ import {
 import { US_STATES, SERVICE_INFO } from '../data/serviceAvailability';
 import type { ServiceType } from '../data/serviceAvailability';
 import { GEO_URL, FIPS_TO_STATE, STATE_CENTERS, SMALL_STATES } from '../data/usMapGeo';
+import { StateProviderPanel } from './StateProviderPanel';
 
 const ACTIVE_COLOR = '#0D9488';
 const INACTIVE_COLOR = '#D1D5DB';
@@ -44,6 +45,7 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
   const [selectedStateFilter, setSelectedStateFilter] = useState<string[]>([]);
   const [selectedServiceFilter, setSelectedServiceFilter] = useState<ServiceType | ''>('');
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const [panelState, setPanelState] = useState<{ stateId: string; stateName: string } | null>(null);
   const [providerSearch, setProviderSearch] = useState('');
   const [stateSearch, setStateSearch] = useState('');
 
@@ -151,6 +153,17 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
   }, []);
 
   const handleMouseLeave = useCallback(() => setTooltip(null), []);
+
+  const handleStateClick = useCallback(
+    (geo: GeographyObject) => () => {
+      const stateId = FIPS_TO_STATE[geo.id] || geo.id;
+      const stateName = US_STATES.find((s) => s.id === stateId)?.name ?? stateId;
+      setPanelState({ stateId, stateName });
+    },
+    []
+  );
+
+  const closePanelHandler = useCallback(() => setPanelState(null), []);
 
   if (loading) {
     return (
@@ -356,6 +369,7 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
                       onMouseEnter={handleMouseEnter(geo)}
                       onMouseMove={handleMouseMove}
                       onMouseLeave={handleMouseLeave}
+                      onClick={handleStateClick(geo)}
                     />
                   );
                 })
@@ -473,6 +487,15 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
           </div>
         </div>
       )}
+
+      {/* State Provider Panel */}
+      <StateProviderPanel
+        isOpen={panelState !== null}
+        onClose={closePanelHandler}
+        stateId={panelState?.stateId ?? ''}
+        stateName={panelState?.stateName ?? ''}
+        row={panelState ? rowByStateId.get(panelState.stateId) : undefined}
+      />
     </div>
   );
 }

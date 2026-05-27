@@ -13,6 +13,10 @@ import { StateComparison } from './components/StateComparison';
 import { Licensing, type LicensingMapType, LICENSING_MAPS } from './components/Licensing';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceType } from './data/serviceAvailability';
+import { CapacityMap } from './components/CapacityMap';
+import { CoverageGapsMap } from './components/CoverageGapsMap';
+import { ChangelogPanel } from './components/ChangelogPanel';
+import { ExportModal } from './components/ExportModal';
 
 // Lazy load the map for better initial load performance
 const USMap = lazy(() => import('./components/USMap').then(module => ({ default: module.USMap })));
@@ -23,6 +27,8 @@ function AppContent() {
   const [preSelectedState, setPreSelectedState] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('single');
   const [licensingMap, setLicensingMap] = useState<LicensingMapType>('csr');
+  const [changelogOpen, setChangelogOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
 
   // Keyboard shortcut: / opens Check My State (when not in an input)
   useEffect(() => {
@@ -68,7 +74,7 @@ function AppContent() {
       mapParam = 'provider-authority';
     }
 
-    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing'].includes(viewParam)) {
+    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing', 'capacity', 'gaps'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
 
@@ -117,8 +123,8 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors">
-      <Header 
-        selectedService={selectedService} 
+      <Header
+        selectedService={selectedService}
         onServiceChange={handleServiceChange}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
@@ -126,6 +132,7 @@ function AppContent() {
           setCheckMyStateOpen(true);
           setPreSelectedState(null);
         }}
+        onChangelogClick={() => setChangelogOpen(true)}
       />
       
       <ExpansionBanner />
@@ -166,6 +173,18 @@ function AppContent() {
             </div>
           )}
 
+          {viewMode === 'capacity' && (
+            <div key="capacity" className="view-transition-item">
+              <CapacityMap onCheckState={handleCheckState} />
+            </div>
+          )}
+
+          {viewMode === 'gaps' && (
+            <div key="gaps" className="view-transition-item">
+              <CoverageGapsMap onCheckState={handleCheckState} />
+            </div>
+          )}
+
           {viewMode === 'licensing' && (
             <div key="licensing" className="view-transition-item">
               <Licensing
@@ -187,6 +206,18 @@ function AppContent() {
           setPreSelectedState(null);
         }}
         preSelectedState={preSelectedState}
+      />
+
+      {/* Changelog Panel */}
+      <ChangelogPanel
+        isOpen={changelogOpen}
+        onClose={() => setChangelogOpen(false)}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
       />
 
       {/* Update notification banner - shows for 24h after an update */}
