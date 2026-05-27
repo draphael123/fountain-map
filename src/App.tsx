@@ -1,33 +1,19 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect } from 'react';
 import { Header, type ViewMode } from './components/Header';
-import { ExpansionBanner } from './components/ExpansionBanner';
-import { MultiServiceMap } from './components/MultiServiceMap';
 import { Footer } from './components/Footer';
 import { UpdateBanner } from './components/UpdateBanner';
 import { CheckMyState } from './components/CheckMyState';
-import { MobileStateSelector } from './components/MobileStateSelector';
-import { MapSkeleton } from './components/MapSkeleton';
-import { RegionalSummary } from './components/RegionalSummary';
-import { Statistics } from './components/Statistics';
-import { StateComparison } from './components/StateComparison';
 import { Licensing, type LicensingMapType, LICENSING_MAPS } from './components/Licensing';
 import { ThemeProvider } from './context/ThemeContext';
-import { ServiceType } from './data/serviceAvailability';
-import { CapacityMap } from './components/CapacityMap';
-import { CoverageGapsMap } from './components/CoverageGapsMap';
 import { ChangelogPanel } from './components/ChangelogPanel';
 import { ExportModal } from './components/ExportModal';
 import { RNLicensingMap } from './components/RNLicensingMap';
 import { OfficeLocationsMap } from './components/OfficeLocationsMap';
 
-// Lazy load the map for better initial load performance
-const USMap = lazy(() => import('./components/USMap').then(module => ({ default: module.USMap })));
-
 function AppContent() {
-  const [selectedService, setSelectedService] = useState<ServiceType>('TRT');
   const [checkMyStateOpen, setCheckMyStateOpen] = useState(false);
   const [preSelectedState, setPreSelectedState] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('single');
+  const [viewMode, setViewMode] = useState<ViewMode>('licensing');
   const [licensingMap, setLicensingMap] = useState<LicensingMapType>('csr');
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -52,18 +38,9 @@ function AppContent() {
   // Handle URL parameters for shareable links
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const serviceParam = params.get('service')?.toUpperCase();
     const stateParam = params.get('state')?.toUpperCase();
     let viewParam = params.get('view')?.toLowerCase() ?? '';
     let mapParam = params.get('map')?.toLowerCase();
-
-    if (serviceParam && ['TRT', 'HRT', 'GLP', 'PLANNING', 'ASYNC'].includes(serviceParam)) {
-      setSelectedService(
-        serviceParam === 'PLANNING' ? 'Planning' :
-        serviceParam === 'ASYNC' ? 'Async' :
-        serviceParam as ServiceType
-      );
-    }
 
     if (viewParam === 'provider') {
       setViewMode('licensing');
@@ -76,7 +53,7 @@ function AppContent() {
       mapParam = 'provider-authority';
     }
 
-    if (viewParam && ['single', 'multi', 'stats', 'compare', 'licensing', 'capacity', 'gaps', 'rn-licensing', 'offices'].includes(viewParam)) {
+    if (viewParam && ['licensing', 'rn-licensing', 'offices'].includes(viewParam)) {
       setViewMode(viewParam as ViewMode);
     }
 
@@ -89,14 +66,6 @@ function AppContent() {
       setCheckMyStateOpen(true);
     }
   }, []);
-
-  // Update URL when service or view changes
-  const handleServiceChange = (service: ServiceType) => {
-    setSelectedService(service);
-    const url = new URL(window.location.href);
-    url.searchParams.set('service', service);
-    window.history.replaceState({}, '', url.toString());
-  };
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
@@ -117,17 +86,9 @@ function AppContent() {
     window.history.replaceState({}, '', url.toString());
   };
 
-  // Handle opening Check My State from state search
-  const handleCheckState = (stateId: string) => {
-    setPreSelectedState(stateId || null);
-    setCheckMyStateOpen(true);
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors">
       <Header
-        selectedService={selectedService}
-        onServiceChange={handleServiceChange}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
         onSearchClick={() => {
@@ -136,57 +97,9 @@ function AppContent() {
         }}
         onChangelogClick={() => setChangelogOpen(true)}
       />
-      
-      <ExpansionBanner />
-      <RegionalSummary />
 
       <main className="flex-grow py-8 sm:py-12 lg:py-16">
         <div className="max-w-7xl mx-auto view-transition-container">
-          {viewMode === 'single' && (
-            <div key="single" className="view-transition-item">
-              <MobileStateSelector 
-                selectedService={selectedService}
-                onSelectState={handleCheckState}
-              />
-              <Suspense fallback={<MapSkeleton />}>
-                <USMap 
-                  selectedService={selectedService} 
-                  onCheckState={handleCheckState}
-                />
-              </Suspense>
-            </div>
-          )}
-          
-          {viewMode === 'multi' && (
-            <div key="multi" className="view-transition-item">
-              <MultiServiceMap onCheckState={handleCheckState} />
-            </div>
-          )}
-
-          {viewMode === 'compare' && (
-            <div key="compare" className="view-transition-item">
-              <StateComparison onCheckState={handleCheckState} />
-            </div>
-          )}
-
-          {viewMode === 'stats' && (
-            <div key="stats" className="view-transition-item">
-              <Statistics />
-            </div>
-          )}
-
-          {viewMode === 'capacity' && (
-            <div key="capacity" className="view-transition-item">
-              <CapacityMap onCheckState={handleCheckState} />
-            </div>
-          )}
-
-          {viewMode === 'gaps' && (
-            <div key="gaps" className="view-transition-item">
-              <CoverageGapsMap onCheckState={handleCheckState} />
-            </div>
-          )}
-
           {viewMode === 'licensing' && (
             <div key="licensing" className="view-transition-item">
               <Licensing
