@@ -21,6 +21,7 @@ import { StateProviderPanel } from './StateProviderPanel';
 
 const ACTIVE_COLOR = '#0D9488';
 const INACTIVE_COLOR = '#D1D5DB';
+const UNLICENSED_COLOR = '#EF4444'; // Red for states where provider is NOT licensed
 
 const SERVICE_TYPES: ServiceType[] = ['TRT', 'HRT', 'GLP', 'Async'];
 
@@ -48,6 +49,7 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
   const [panelState, setPanelState] = useState<{ stateId: string; stateName: string } | null>(null);
   const [providerSearch, setProviderSearch] = useState('');
   const [stateSearch, setStateSearch] = useState('');
+  const [showUnlicensed, setShowUnlicensed] = useState(false);
 
   useEffect(() => {
     loadProviderLicensingData()
@@ -110,6 +112,7 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
     setSelectedServiceFilter('');
     setProviderSearch('');
     setStateSearch('');
+    setShowUnlicensed(false);
   }, []);
 
   const providerCoverageSummary = useMemo(() => {
@@ -300,7 +303,7 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-3">
           <button
             type="button"
             onClick={clearFilters}
@@ -308,6 +311,19 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
           >
             Clear filters
           </button>
+          {selectedProviders.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowUnlicensed(!showUnlicensed)}
+              className={`px-5 py-3 sm:px-4 sm:py-2 text-sm font-medium rounded-lg min-h-[44px] sm:min-h-0 touch-manipulation transition-colors ${
+                showUnlicensed
+                  ? 'bg-red-500 text-white hover:bg-red-600'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              {showUnlicensed ? 'Showing unlicensed' : 'Show unlicensed'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -344,14 +360,25 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
                   const row = rowByStateId.get(stateId);
                   const hasProvider = stateHasSelectedProviders(row, selectedProviders);
                   const stateInFilter = selectedStateFilter.length === 0 || selectedStateFilter.includes(stateId);
-                  const showActive = selectedProviders.length > 0 && hasProvider && stateInFilter;
                   const dimmed = selectedStateFilter.length > 0 && !stateInFilter;
+
+                  // Determine fill color based on mode
+                  let fillColor = INACTIVE_COLOR;
+                  if (selectedProviders.length > 0 && stateInFilter) {
+                    if (showUnlicensed) {
+                      // Show where NOT licensed (invert)
+                      fillColor = hasProvider ? INACTIVE_COLOR : UNLICENSED_COLOR;
+                    } else {
+                      // Normal mode: show where licensed
+                      fillColor = hasProvider ? ACTIVE_COLOR : INACTIVE_COLOR;
+                    }
+                  }
 
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={showActive ? ACTIVE_COLOR : INACTIVE_COLOR}
+                      fill={fillColor}
                       stroke="#ffffff"
                       strokeWidth={0.75}
                       style={{
@@ -381,7 +408,11 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
               const row = rowByStateId.get(stateId);
               const hasProvider = stateHasSelectedProviders(row, selectedProviders);
               const stateInFilter = selectedStateFilter.length === 0 || selectedStateFilter.includes(stateId);
-              const showActive = selectedProviders.length > 0 && hasProvider && stateInFilter;
+
+              // Determine if state should be highlighted based on mode
+              const isHighlighted = selectedProviders.length > 0 && stateInFilter && (
+                showUnlicensed ? !hasProvider : hasProvider
+              );
 
               return (
                 <Marker key={stateId} coordinates={coords}>
@@ -391,7 +422,7 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
                       fontFamily: 'Outfit, system-ui, sans-serif',
                       fontSize: stateId === 'DC' ? 6 : (stateId === 'AK' || stateId === 'HI' ? 8 : 10),
                       fontWeight: 600,
-                      fill: showActive ? '#1E293B' : '#6B7280',
+                      fill: isHighlighted ? '#1E293B' : '#6B7280',
                       pointerEvents: 'none',
                       textShadow: '0 0 3px rgba(255,255,255,0.8)',
                     }}
@@ -409,7 +440,14 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
               const row = rowByStateId.get(stateId);
               const hasProvider = stateHasSelectedProviders(row, selectedProviders);
               const stateInFilter = selectedStateFilter.length === 0 || selectedStateFilter.includes(stateId);
-              const showActive = selectedProviders.length > 0 && hasProvider && stateInFilter;
+
+              // Determine highlight color based on mode
+              const isHighlighted = selectedProviders.length > 0 && stateInFilter && (
+                showUnlicensed ? !hasProvider : hasProvider
+              );
+              const labelColor = isHighlighted
+                ? (showUnlicensed ? UNLICENSED_COLOR : ACTIVE_COLOR)
+                : '#9CA3AF';
 
               return (
                 <Annotation
@@ -425,7 +463,7 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
                       fontFamily: 'Outfit, system-ui, sans-serif',
                       fontSize: 9,
                       fontWeight: 600,
-                      fill: showActive ? ACTIVE_COLOR : '#9CA3AF',
+                      fill: labelColor,
                     }}
                     dy={4}
                   >
@@ -439,16 +477,33 @@ export function ProviderAuthorityMap({ showTitle = true }: ProviderAuthorityMapP
       </div>
 
       <div className="flex justify-center gap-6 mt-4 sm:mt-6 flex-wrap px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded shadow-sm" style={{ backgroundColor: ACTIVE_COLOR }} />
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            {selectedProviders.length > 0 ? 'Selected provider(s) licensed' : 'Select providers to see coverage'}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded shadow-sm" style={{ backgroundColor: INACTIVE_COLOR }} />
-          <span className="text-sm text-gray-700 dark:text-gray-300">No selected provider / not in filter</span>
-        </div>
+        {showUnlicensed ? (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded shadow-sm" style={{ backgroundColor: UNLICENSED_COLOR }} />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Not licensed (needs licensure)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded shadow-sm" style={{ backgroundColor: INACTIVE_COLOR }} />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Already licensed</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded shadow-sm" style={{ backgroundColor: ACTIVE_COLOR }} />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {selectedProviders.length > 0 ? 'Selected provider(s) licensed' : 'Select providers to see coverage'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded shadow-sm" style={{ backgroundColor: INACTIVE_COLOR }} />
+              <span className="text-sm text-gray-700 dark:text-gray-300">No selected provider / not in filter</span>
+            </div>
+          </>
+        )}
       </div>
 
       {tooltip && (
