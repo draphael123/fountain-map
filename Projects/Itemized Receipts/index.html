@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fountain Vitality — Itemized Receipt Generator</title>
+<link rel="icon" href="https://framerusercontent.com/images/TUOPymBCd2ZpwLZVUecqAX7Yo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<style>
+  :root {
+    --fountain-navy: #181C39;
+    --fountain-teal: #3EC9CC;
+    --teal-dark: #2BA5A8;
+    --body-text: #5E6075;
+    --light-bg: #f7fafa;
+    --section-bg: #e8f4f4;
+    --paid-red: #cc0000;
+    --pink-accent: #FC98B4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f0fafa 0%, #e6f5f5 50%, #f0fafa 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
+    color: var(--body-text);
+  }
+
+  /* ===== MAIN APP ===== */
+  #appContent { display: block; }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .header {
+    background: var(--fountain-navy);
+    color: white;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header img {
+    height: 36px;
+    filter: brightness(0) invert(1);
+  }
+  .header-text h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .header-text .subtitle {
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.65;
+    margin-top: 2px;
+  }
+  .header .teal-bar {
+    width: 48px;
+    height: 3px;
+    background: var(--fountain-teal);
+    border-radius: 2px;
+    margin-top: 6px;
+  }
+  .form-body { padding: 32px; }
+  .field { margin-bottom: 24px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fountain-navy);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .field select, .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e0e4ea;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'Libre Franklin', sans-serif;
+    transition: border-color 0.2s;
+    background: white;
+    color: var(--fountain-navy);
+  }
+  .field select:focus, .field input:focus {
+    outline: none;
+    border-color: var(--fountain-teal);
+  }
+  .row { display: flex; gap: 16px; }
+  .row .field { flex: 1; }
+  .toggle-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .toggle-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--body-text);
+    cursor: pointer;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--fountain-teal);
+  }
+  .btn-generate {
+    width: 100%;
+    padding: 14px;
+    background: var(--fountain-teal);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Libre Franklin', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-generate:hover { background: var(--teal-dark); }
+  .btn-generate:active { transform: scale(0.98); }
+  .btn-generate:disabled {
+    background: #b0b0b0;
+    cursor: not-allowed;
+  }
+  .preview-box {
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 10px;
+    border: 1px solid #e0e4ea;
+    font-size: 13px;
+    display: none;
+  }
+  .preview-box h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--fountain-navy);
+  }
+  .preview-box .line {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+  }
+  .preview-box .line.section {
+    font-weight: 600;
+    border-bottom: 2px solid var(--fountain-teal);
+    margin-top: 8px;
+    padding-bottom: 4px;
+    color: var(--fountain-navy);
+  }
+  .preview-box .line.total {
+    font-weight: 700;
+    font-size: 15px;
+    border-top: 2px solid var(--fountain-teal);
+    margin-top: 8px;
+    padding-top: 6px;
+    color: var(--fountain-navy);
+  }
+  .preview-box .line .indent { padding-left: 20px; }
+  .status {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--fountain-teal);
+    font-weight: 500;
+  }
+  .footer-note {
+    text-align: center;
+    padding: 16px 32px 24px;
+    font-size: 12px;
+    color: #aab;
+  }
+
+
+  /* ===== FORM VALIDATION ===== */
+  .field .error-msg {
+    font-size: 11px;
+    color: #e74c3c;
+    margin-top: 4px;
+    display: none;
+    font-weight: 500;
+  }
+  .field.has-error select,
+  .field.has-error input[type="number"],
+  .field.has-error input[type="text"] {
+    border-color: #e74c3c !important;
+    background: #fef6f6;
+  }
+  body.dark-mode .field.has-error select,
+  body.dark-mode .field.has-error input[type="number"],
+  body.dark-mode .field.has-error input[type="text"] {
+    background: #2a1f2a;
+    border-color: #e74c3c !important;
+  }
+  .field.has-error .error-msg { display: block; }
+
+  /* ===== TEMPLATE INFO CARD ===== */
+  .template-info {
+    margin-top: 8px;
+    padding: 12px 16px;
+    background: var(--section-bg);
+    border-radius: 8px;
+    border-left: 3px solid var(--fountain-teal);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--body-text);
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .template-info strong {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--fountain-navy);
+    margin-bottom: 4px;
+  }
+  .template-info .info-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+  .template-info .info-item {
+    position: relative;
+    padding-left: 14px;
+    font-size: 12px;
+  }
+  .template-info .info-item::before {
+    content: "\2022";
+    color: var(--fountain-teal);
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+  .template-info .defaults {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #8b90a8;
+  }
+  body.dark-mode .template-info {
+    background: #1a1f38;
+    color: #b0b4cc;
+  }
+  body.dark-mode .template-info strong { color: #e4e6f0; }
+  body.dark-mode .template-info .defaults { color: #6b7094; }
+
+  /* ===== DARK MODE ===== */
+  body.dark-mode {
+    background: linear-gradient(135deg, #0f1225 0%, #151a35 50%, #0f1225 100%);
+  }
+  body.dark-mode .container {
+    background: #1e2240;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  body.dark-mode .form-body { color: #cfd2e0; }
+  body.dark-mode .field label { color: #a8adc4; }
+  body.dark-mode .field select,
+  body.dark-mode .field input {
+    background: #282d4a;
+    border-color: #3a3f5c;
+    color: #e4e6f0;
+  }
+  body.dark-mode .field select:focus,
+  body.dark-mode .field input:focus { border-color: var(--fountain-teal); }
+  body.dark-mode .toggle-row label { color: #b0b4cc; }
+  body.dark-mode .preview-box {
+    background: #1a1f38;
+    border-color: #3a3f5c;
+  }
+  body.dark-mode .preview-box h3 { color: #e4e6f0; }
+  body.dark-mode .preview-box .line { color: #cfd2e0; }
+  body.dark-mode .preview-box .line.section { color: #e4e6f0; }
+  body.dark-mode .preview-box .line.total { color: #e4e6f0; }
+  body.dark-mode .footer-note { color: #6b7094; }
+  body.dark-mode #loginOverlay {
+    background: linear-gradient(135deg, #0a0d1a 0%, #0f1a25 50%, #0a0d1a 100%);
+  }
+  body.dark-mode .login-card {
+    background: #1e2240;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  body.dark-mode .login-card h2 { color: #e4e6f0; }
+  body.dark-mode .login-card p { color: #9ba0b8; }
+  body.dark-mode .login-card input {
+    background: #282d4a;
+    border-color: #3a3f5c;
+    color: #e4e6f0;
+  }
+  body.dark-mode .login-card .hint { color: #6b7094; }
+  .dark-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10000;
+    background: var(--fountain-navy);
+    border: 2px solid #3a3f5c;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .dark-toggle:hover { background: #2a3060; transform: scale(1.05); }
+  body.dark-mode .dark-toggle {
+    background: #282d4a;
+    border-color: var(--fountain-teal);
+  }
+
+  /* ===== SUCCESS TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--fountain-navy);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Libre Franklin', sans-serif;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 10001;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast .toast-icon {
+    width: 22px;
+    height: 22px;
+    background: var(--fountain-teal);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  body.dark-mode .toast {
+    background: #282d4a;
+    border: 1px solid #3a3f5c;
+  }
+
+  /* ===== PDF PREVIEW ===== */
+  .pdf-preview-container {
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e0e4ea;
+    display: none;
+  }
+  .pdf-preview-container.show { display: block; }
+  .pdf-preview-header {
+    background: var(--section-bg);
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fountain-navy);
+  }
+  .pdf-preview-header button {
+    background: var(--fountain-teal);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Libre Franklin', sans-serif;
+  }
+  .pdf-preview-header button:hover { background: var(--teal-dark); }
+  .pdf-preview-iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+    background: #f5f5f5;
+  }
+  body.dark-mode .pdf-preview-container { border-color: #3a3f5c; }
+  body.dark-mode .pdf-preview-header {
+    background: #1a1f38;
+    color: #e4e6f0;
+  }
+  body.dark-mode .pdf-preview-iframe { background: #282d4a; }
+
+  /* ===== MOBILE RESPONSIVE ===== */
+  @media (max-width: 680px) {
+    body { padding: 16px 8px; }
+    .container { border-radius: 12px; }
+    .header { padding: 18px 20px; }
+    .header img { height: 28px; }
+    .header-text h1 { font-size: 17px; }
+    .form-body { padding: 20px 16px; }
+    .row { flex-direction: column; gap: 0; }
+    .toggle-row { flex-direction: column; gap: 12px; }
+    .pdf-preview-iframe { height: 350px; }
+    .login-card { margin: 0 16px; padding: 36px 24px; }
+  }
+  @media (max-width: 400px) {
+    .header-text h1 { font-size: 15px; }
+    .header-text .subtitle { font-size: 11px; }
+    .btn-generate { font-size: 14px; padding: 12px; }
+    .pdf-preview-iframe { height: 280px; }
+  }
+
+  /* ===== FIELD INFO TOOLTIPS ===== */
+  /* A small "i" icon next to a label. Add one with:
+       <span class="fv-tip" tabindex="0" aria-label="..." data-tip="explanation">i</span>
+     The bubble shows on hover or keyboard focus. Pure CSS, no JS. */
+  .fv-tip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 15px; height: 15px; margin-left: 6px; border-radius: 50%;
+    background: #cdd6dd; color: #fff; font-size: 10px; font-weight: 700;
+    font-style: normal; text-transform: none; letter-spacing: 0;
+    line-height: 1; cursor: help; position: relative; vertical-align: middle;
+    font-family: 'Libre Franklin', sans-serif; user-select: none;
+  }
+  .fv-tip:hover, .fv-tip:focus { background: #2BA5A8; outline: none; }
+  .fv-tip::after {
+    content: attr(data-tip);
+    position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%);
+    width: 230px; max-width: 62vw;
+    background: #181C39; color: #fff;
+    padding: 9px 11px; border-radius: 8px;
+    font-size: 11px; font-weight: 400; line-height: 1.5;
+    text-align: left; text-transform: none; letter-spacing: 0;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.24);
+    opacity: 0; visibility: hidden; transition: opacity .12s ease;
+    pointer-events: none; z-index: 60; white-space: normal;
+  }
+  .fv-tip:hover::after, .fv-tip:focus::after { opacity: 1; visibility: visible; }
+  body.dark-mode .fv-tip { background: #3a3f63; }
+  body.dark-mode .fv-tip:hover, body.dark-mode .fv-tip:focus { background: #2BA5A8; }
+  body.dark-mode .fv-tip::after { background: #000; box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
+</style>
+</head>
+<body>
+
+<!-- DARK MODE TOGGLE -->
+<button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">&#127769;</button>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast">
+  <div class="toast-icon">&#10003;</div>
+  <span id="toastMsg">PDF generated successfully!</span>
+</div>
+
+
+
+
+<!-- MAIN APP -->
+<div id="appContent">
+<div class="container">
+  <div class="header">
+    <img src="https://framerusercontent.com/images/LE6M6GYbhCcJvlv3VhjTi7wIw.png" alt="Fountain">
+    <div class="header-text">
+      <h1>Fountain Vitality</h1>
+      <div class="teal-bar"></div>
+      <div class="subtitle" id="appSubtitle">Itemized Receipt Generator</div>
+      <div id="versionBadge" title="Last commit to the receipt generator repo" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 10px;font-size:11px;font-weight:600;letter-spacing:0.3px;color:#0a4039;background:#e3f7f4;border:1px solid #b9e7df;border-radius:999px;font-family:'Libre Franklin',sans-serif;cursor:help;">
+        <span style="width:6px;height:6px;border-radius:50%;background:#40c4aa;box-shadow:0 0 0 2px rgba(64,196,170,0.25);display:inline-block;"></span>
+        <span id="versionBadgeText">Updated · loading…</span>
+      </div>
+      <div id="lastChangeText" style="margin-top:6px;font-size:11px;line-height:1.4;color:#c5e8e2;font-family:'Libre Franklin',sans-serif;max-width:360px;"></div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      // Read the version directly from service-worker.js — same-origin, always works,
+      // and includes both version number and date (e.g. "fv-receipt-v37-2026-05-28").
+      // No GitHub API needed (which fails on private repos anyway).
+      var el = document.getElementById("versionBadgeText");
+      var badge = document.getElementById("versionBadge");
+      fetch("./service-worker.js?_t=" + Date.now(), { cache: "no-store" })
+        .then(function(r){ return r.text(); })
+        .then(function(text){
+          var m = text.match(/CACHE_VERSION\s*=\s*["']([^"']+)["']/);
+          if (!m) { if (el) el.textContent = "Updated · unknown"; return; }
+          // m[1] = "fv-receipt-v37-2026-05-28"
+          var parts = m[1].split("-");
+          var version = "";
+          var dateIso = "";
+          for (var i = 0; i < parts.length; i++) {
+            if (/^v\d+$/.test(parts[i])) version = parts[i];
+            if (/^\d{4}$/.test(parts[i]) && parts[i+1] && parts[i+2]) {
+              dateIso = parts[i] + "-" + parts[i+1] + "-" + parts[i+2];
+              break;
+            }
+          }
+          var pretty = "";
+          if (dateIso) {
+            var d = new Date(dateIso + "T12:00:00");
+            pretty = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+          }
+          var label = pretty || "unknown";
+          if (version) label += " · " + version;
+          if (el) el.textContent = "Updated · " + label;
+          // Single-sentence summary of the most recent change (also from service-worker.js).
+          var lc = text.match(/LAST_CHANGE\s*=\s*"([^"]*)"/);
+          var lce = document.getElementById("lastChangeText");
+          if (lce) lce.textContent = (lc && lc[1]) ? "Latest: " + lc[1] : "";
+          // Make the badge clickable to open the commit history
+          if (badge) {
+            badge.style.cursor = "pointer";
+            badge.title = "Click to view recent changes on GitHub";
+            badge.addEventListener("click", function(){
+              window.open("https://github.com/draphael123/fountain-receipt-generator/commits/main", "_blank");
+            });
+          }
+        })
+        .catch(function(){
+          if (el) el.textContent = "Updated · offline";
+        });
+    })();
+  </script>
+  <div class="form-body">
+    <!-- Document Type toggle -->
+    <div class="field" style="margin-bottom:20px;">
+      <label style="font-size:12px;font-weight:600;color:#181C39;text-transform:uppercase;letter-spacing:0.6px;">Document Type</label>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <label id="docTypeReceiptLabel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border:2px solid var(--fountain-teal);border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:#181C39;background:#f0fafa;transition:all 0.15s;">
+          <input type="radio" name="docType" id="docTypeReceipt" value="receipt" checked style="accent-color:var(--fountain-teal);"> Itemized Receipt
+        </label>
+        <label id="docTypeSuperbillLabel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border:2px solid #e0e4ea;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:#8b8fa0;background:white;transition:all 0.15s;">
+          <input type="radio" name="docType" id="docTypeSuperbill" value="superbill" style="accent-color:var(--fountain-teal);"> Superbill
+        </label>
+      </div>
+    </div>
+    <script>
+    (function() {
+      function applyDocType(val) {
+        var isSuperbill = val === "superbill";
+        // Subtitle
+        var sub = document.getElementById("appSubtitle");
+        if (sub) sub.textContent = isSuperbill ? "Superbill Generator" : "Itemized Receipt Generator";
+        // Button
+        var btn = document.getElementById("generateBtn");
+        if (btn) btn.textContent = isSuperbill ? "Generate Superbill PDF" : "Generate Receipt PDF";
+        // NPI — force-check on superbill, restore to unchecked on receipt
+        var npi = document.getElementById("addNPI");
+        if (npi) { npi.checked = isSuperbill; npi.disabled = isSuperbill; }
+        // Toggle label styles
+        var rLabel = document.getElementById("docTypeReceiptLabel");
+        var sLabel = document.getElementById("docTypeSuperbillLabel");
+        if (rLabel) { rLabel.style.borderColor = isSuperbill ? "#e0e4ea" : "var(--fountain-teal)"; rLabel.style.background = isSuperbill ? "white" : "#f0fafa"; rLabel.style.color = isSuperbill ? "#8b8fa0" : "#181C39"; }
+        if (sLabel) { sLabel.style.borderColor = isSuperbill ? "var(--fountain-teal)" : "#e0e4ea"; sLabel.style.background = isSuperbill ? "#f0fafa" : "white"; sLabel.style.color = isSuperbill ? "#181C39" : "#8b8fa0"; }
+        // Expose globally for PDF generation
+        window.FV = window.FV || {};
+        window.FV.docType = val;
+      }
+      document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll("input[name='docType']").forEach(function(r) {
+          r.addEventListener("change", function() { applyDocType(this.value); });
+        });
+        applyDocType("receipt");
+      });
+    })();
+    </script>
+    <div class="field">
+      <label>Template Type<span class="fv-tip" tabindex="0" aria-label="Template Type help" data-tip="The patient's plan. Picking a template sets the default price, medications, and (if enabled) the ICD-10 diagnosis code.">i</span></label>
+      <select id="template">
+        <option value="trt_enc_core">TRT/ENC Core Membership</option>
+        <option value="hrt_core">HRT Core Membership</option>
+        <option value="hrt_eval">HRT Evaluation (Full)</option>
+        <option value="hrt_eval_35_no_labs">HRT Evaluation $35 (No Labs)</option>
+        <option value="labcorp_fee">LabCorp Fee (Itemized)</option>
+      </select>
+      <div class="template-info" id="templateInfo"></div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Plan Price ($)<span class="fv-tip" tabindex="0" aria-label="Plan Price help" data-tip="Total amount the patient paid for the plan. Auto-fills from the template — override it for custom or prorated pricing.">i</span></label>
+        <input type="number" id="price" step="0.01" placeholder="e.g. 499">
+        <div class="error-msg" id="priceError">Price is required</div>
+      </div>
+      <div class="field">
+        <label>Duration (Weeks)<span class="fv-tip" tabindex="0" aria-label="Duration help" data-tip="Length of the subscription period in weeks. Drives the per-line cost breakdown and the Subscription Coverage date range.">i</span></label>
+        <input type="number" id="weeks" placeholder="e.g. 12">
+        <div class="error-msg" id="weeksError">Duration is required for this template</div>
+      </div>
+    </div>
+    <div class="field">
+      <label><span id="chargeDateLabelText">Charge Date</span> <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8b8fa0;">(optional &mdash; drives Subscription Coverage date range &amp; filename)</span></label>
+      <input type="date" id="chargeDateInput">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;color:#5E6075;margin-top:6px;cursor:pointer;"><input type="checkbox" id="dosToggle"> Label this field &ldquo;Date of Service&rdquo; (instead of &ldquo;Charge Date&rdquo;)</label>
+    </div>
+    <div class="toggle-row" id="billingTogglesRow">
+      <label><input type="checkbox" id="noLabs"> No Labs</label>
+      <label><input type="checkbox" id="noPharmacy"> Management Only (No Pharmacy)</label>
+    </div>
+    <div style="font-size:11px;color:#8b8fa0;margin:2px 0 14px;line-height:1.6;">
+      <strong style="color:#5E6075;">No Labs</strong> &mdash; removes lab line items (use for NY, NJ, MD, MA, RI). &nbsp;&middot;&nbsp;
+      <strong style="color:#5E6075;">Management Only</strong> &mdash; drops the pharmacy/medication line for management-only plans.
+    </div>
+    <div id="hrtCompositionRow" style="display:none;margin-bottom:8px;">
+      <label for="hrtComposition" style="display:block;font-size:12px;font-weight:600;color:#181C39;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">HRT Medication</label>
+      <select id="hrtComposition" style="width:100%;padding:8px 10px;border:1px solid #d0d4da;border-radius:6px;font-size:13px;font-family:'Libre Franklin',sans-serif;color:#181C39;background:white;">
+        <option value="full">Full — Testosterone + Progesterone + Estradiol</option>
+        <option value="tp">Testosterone + Progesterone (no Estradiol)</option>
+        <option value="t">Testosterone only (48 week only for now!)</option>
+        <option value="p">Progesterone only (48 week only for now!)</option>
+      </select>
+    </div>
+    <div id="hrtCompositionHelp" style="display:none;font-size:11px;color:#8b8fa0;margin:2px 0 14px;line-height:1.6;">
+      <strong style="color:#5E6075;">HRT Medication</strong> &mdash; which hormones appear on the receipt. The single-hormone and no-Estradiol options bill only the selected med(s), zero the patient lab line, and keep the lab-ordering review.
+    </div>
+    <div class="field" style="margin-top:8px;margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:600;color:#181C39;text-transform:uppercase;letter-spacing:0.6px;">Invoice Status<span class="fv-tip" tabindex="0" aria-label="Invoice Status help" data-tip="Stamps the receipt as Paid, Unpaid, Past Due, or Refunded. Anything other than Paid prints a colored status mark on the PDF.">i</span></label>
+      <select id="invoiceStatus" style="margin-top:6px;width:100%;padding:8px 10px;border:1px solid #d0d4da;border-radius:6px;font-size:13px;font-family:'Libre Franklin',sans-serif;color:#181C39;background:white;">
+        <option value="paid">Paid (default)</option>
+        <option value="unpaid">Unpaid</option>
+        <option value="past_due">Past Due</option>
+        <option value="refunded">Refunded</option>
+      </select>
+    </div>
+    <div class="field" style="margin-top:16px;margin-bottom:8px;">
+      <label style="font-size:12px;font-weight:600;color:#181C39;text-transform:uppercase;letter-spacing:0.6px;">Add to PDF</label>
+      <div style="font-size:11px;color:#8b8fa0;margin-top:2px;margin-bottom:8px;">Optional sections that get added to the generated receipt.</div>
+      <div class="toggle-row" id="addToPdfTogglesRow" style="margin-bottom:0;">
+        <label><input type="checkbox" id="addDiagnosis" checked> ICD-10 Diagnosis Code<span class="fv-tip" tabindex="0" aria-label="ICD-10 Diagnosis Code help" data-tip="On by default for all TRT/HRT templates — the ICD-10 code is auto-filled from the selected template (e.g. TRT -> E29.1, HRT -> N95.1) and paired with the practice EIN. Patients use it for HSA/FSA and insurance reimbursement. Uncheck only for the rare receipt that should omit a diagnosis.">i</span></label>
+        <label><input type="checkbox" id="addNPI"> NPI Number<span class="fv-tip" tabindex="0" aria-label="NPI Number help" data-tip="Adds a National Provider Identifier row — the rendering provider's unique 10-digit ID issued by CMS. Left blank as a fillable field for the provider to complete in Adobe. Often required for HSA/FSA or insurance reimbursement.">i</span></label>
+        <label><input type="checkbox" id="addAddress"> Patient Address<span class="fv-tip" tabindex="0" aria-label="Patient Address help" data-tip="Adds a Patient Address column to the header. Off by default. The field auto-shrinks its text in Adobe so long addresses fit on one line.">i</span></label>
+        <label id="addRenderingProviderLabel" style="display:none;"><input type="checkbox" id="addRenderingProvider"> Rendering Provider<span class="fv-tip" tabindex="0" aria-label="Rendering Provider help" data-tip="Assessments/evaluations only. The Rendering Provider's Professional Name row is omitted from assessment receipts by default. Check this to add it back as a fillable row. On all non-assessment templates the row always appears regardless of this toggle.">i</span></label>
+      </div>
+    </div>
+    <div class="field" id="diagnosisField" style="display:none;">
+      <label>Diagnosis Code (ICD-10)</label>
+      <div id="diagnosisCodeDisplay" style="padding:10px 12px;border:2px solid #e0e4ea;border-radius:8px;font-size:14px;font-family:'Libre Franklin',sans-serif;background:#f7fafa;color:#181C39;">—</div>
+      <div style="font-size:11px;color:#8b8fa0;margin-top:4px;">Auto-assigned by template. Edit defaults in fv-shared.js if needed.</div>
+    </div>
+    <div class="field">
+      <label>Custom Medications (optional, comma-separated)<span class="fv-tip" tabindex="0" aria-label="Custom Medications help" data-tip="Overrides the template's default medication line(s) on the receipt. Enter one or more names separated by commas. Leave blank to use the template defaults.">i</span></label>
+      <input type="text" id="medications" placeholder="e.g. T Cypionate 10mL">
+    </div>
+    <button class="btn-generate" id="generateBtn" onclick="generateReceipt()">Generate Receipt PDF</button>
+    <div class="status" id="status"></div>
+    <div class="preview-box" id="preview"></div>
+    <div class="pdf-preview-container" id="pdfPreviewContainer">
+      <div class="pdf-preview-header">
+        <span>PDF Preview</span>
+        <button onclick="downloadFromPreview()">Download PDF</button>
+      </div>
+      <iframe class="pdf-preview-iframe" id="pdfPreviewFrame"></iframe>
+    </div>
+  </div>
+  <div class="footer-note">
+    PHI fields (Patient Name, DOB, Charge Date, Provider) are fillable in the PDF unless you fill them in on the form first.<br>
+    Internal use only — Fountain Vitality Clinical Operations
+  </div>
+  <div id="lastUpdated" style="max-width:640px;margin:12px auto 0;padding:10px 16px;font-size:11px;color:#999;font-family:'Libre Franklin',sans-serif;text-align:center;background:rgba(255,255,255,0.5);border-radius:8px;border:1px solid #e8ecec;">
+    <span style="font-weight:600;color:#5E6075;">Last Updated:</span> <span id="lastUpdatedDate">Loading...</span><br>
+    <span id="lastUpdatedMsg" style="color:#888;font-style:italic;"></span>
+  </div>
+  <script>
+    (function(){
+      // Read SW cache version (same-origin, works on private repos).
+      // Fetch CHANGELOG.md for the most recent entries.
+      var dateEl = document.getElementById("lastUpdatedDate");
+      var msgEl = document.getElementById("lastUpdatedMsg");
+      fetch("./service-worker.js?_t=" + Date.now(), { cache: "no-store" })
+        .then(function(r){ return r.text(); })
+        .then(function(text){
+          var m = text.match(/CACHE_VERSION\s*=\s*["']([^"']+)["']/);
+          if (!m) { if (dateEl) dateEl.textContent = "unknown"; return; }
+          var parts = m[1].split("-");
+          var version = "";
+          var dateIso = "";
+          for (var i = 0; i < parts.length; i++) {
+            if (/^v\d+$/.test(parts[i])) version = parts[i];
+            if (/^\d{4}$/.test(parts[i]) && parts[i+1] && parts[i+2]) {
+              dateIso = parts[i] + "-" + parts[i+1] + "-" + parts[i+2];
+              break;
+            }
+          }
+          if (dateIso) {
+            var d = new Date(dateIso + "T12:00:00");
+            var pretty = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+            if (dateEl) dateEl.textContent = pretty + (version ? " (" + version + ")" : "");
+          } else if (dateEl) {
+            dateEl.textContent = m[1];
+          }
+        })
+        .catch(function(){ if (dateEl) dateEl.textContent = "offline"; });
+
+      // Load CHANGELOG.md for recent entries.
+      fetch("./CHANGELOG.md?_t=" + Date.now(), { cache: "no-store" })
+        .then(function(r){ return r.ok ? r.text() : Promise.reject(); })
+        .then(function(text){
+          if (!msgEl) return;
+          // Show the first 6 non-header lines from CHANGELOG.md
+          var lines = text.split("\n")
+            .filter(function(l){ return l.trim() && !l.startsWith("#"); })
+            .slice(0, 6);
+          msgEl.innerHTML = lines.map(function(l){
+            return l.replace(/^- /, "• ").replace(/`([^`]+)`/g, "<code>$1</code>");
+          }).join("<br>");
+        })
+        .catch(function(){ /* changelog missing — leave msg empty */ });
+    })();
+  </script>
+</div>
+</div>
+
+  <!-- Load config first so window.FV_CONFIG is available to all downstream scripts -->
+  <script src="fountain-config.js"></script>
+  <!-- Sentry must load early to capture errors from later scripts -->
+  <script src="sentry-init.js"></script>
+  <script src="fv-shared.js"></script>
+  <script src="bg.js"></script>
+  <script src="auth.js"></script>
+  <script src="detail-lines.js"></script>
+  <script src="detail-lines-pdf.js"></script>
+  <script src="shortcuts.js"></script>
+  <script src="print-preview.js"></script>
+  <script src="multi-receipt.js"></script>
+  <script src="cpt-lines.js"></script>
+  <script src="visual-polish.js"></script>
+  <script>
+    // Register service worker for offline support (no-op on file:// or older browsers)
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./service-worker.js")
+          .catch(function (err) { console.warn("[sw] registration failed:", err); });
+      });
+    }
+  </script>
+  <script src="med-selector.js"></script>
+  <script src="ui-enhancements.js"></script>
+  <script src="ui-extras.js"></script>
+  <script src="visual-upgrade.js"></script>
+  <script src="ui-pack.js"></script>
+  <script src="operator-ux.js"></script>
+  <script src="stripe-import.js"></script>
+  <script src="tabs.js"></script>
+<script>
+// ============================================================
+// BACKGROUND IMAGE (base64-encoded PNG)
+// ============================================================
+// BG_IMAGE_B64 loaded from bg-image.js
+
+// ============================================================
+// COST BREAKDOWN ENGINE (matches spreadsheet Formula sheet)
+// ============================================================
+// ⚠️ SUPERSEDED: this inline copy is no longer the live engine. The
+// authoritative, unit-tested engine lives in cost-engine.js, which loads
+// last (before </body>) and overrides COGS / TEMPLATE_PRESETS / getBreakdown
+// on window. EDIT PRICES IN cost-engine.js, NOT HERE. This block is kept
+// only to avoid a large risky edit and will be removed in a later cleanup.
+
+// COGS lookup table: { name: { cost_28d, cost_shipment, shipping, dispensing } }
+const COGS = {
+  "TRT \u2013 T CYPIONATE (10ML)":       { cost_28d: 60.0,  cost_ship: 60.0,   shipping: 12.0, dispensing: 0.0 },
+  "TRT \u2013 T CREAM":                  { cost_28d: 19.6,  cost_ship: 58.8,   shipping: 12.0, dispensing: 9.81 },
+  "TRT \u2013 ENCLOMIPHENE":             { cost_28d: 29.4,  cost_ship: 88.2,   shipping: 12.0, dispensing: 8.0 },
+  "HRT \u2013 FIRST 90 DAYS (TESTOSTERONE)": { cost_28d: 12.42, cost_ship: 37.26, shipping: 13.0, dispensing: 0.0 },
+  "HRT \u2013 FIRST 90 DAYS (ESTRADIOL)":    { cost_28d: 12.42, cost_ship: 37.26, shipping: 13.0, dispensing: 0.0 },
+  "HRT \u2013 FIRST 90 DAYS (PROGESTERONE)": { cost_28d: 13.8,  cost_ship: 41.4,  shipping: 13.0, dispensing: 0.0 },
+  "HRT \u2013 ESTRADIOL":                { cost_28d: 10.0,  cost_ship: 30.0,   shipping: 12.0, dispensing: 0.0 },
+  "HRT \u2013 TESTOSTERONE":             { cost_28d: 10.0,  cost_ship: 30.0,   shipping: 12.0, dispensing: 0.0 },
+  "HRT \u2013 PROGESTERONE":             { cost_28d: 16.8,  cost_ship: 50.4,   shipping: 12.0, dispensing: 0.0 },
+  "ED \u2013 TADALAFIL":                 { cost_28d: 5.6,   cost_ship: 16.8,   shipping: 12.0, dispensing: 5.0 },
+  "THYROID":                               { cost_28d: 21.0,  cost_ship: 63.0,   shipping: 12.0, dispensing: 0.0 },
+  "HAIR \u2013 MINOXIDIL":               { cost_28d: null,  cost_ship: 13.5,   shipping: 12.0, dispensing: 9.81 },
+  "HAIR \u2013 FINASTERIDE":             { cost_28d: null,  cost_ship: 18.0,   shipping: 12.0, dispensing: 8.0 },
+  "HAIR \u2013 DUTASTERIDE":             { cost_28d: null,  cost_ship: 15.0,   shipping: 12.0, dispensing: 9.81 },
+  "TRT \u2013 ANASTROZOLE":              { cost_28d: 1.2,   cost_ship: 12.0,   shipping: 12.0, dispensing: 5.45 },
+  "HCG":                                   { cost_28d: null,  cost_ship: 228.0,  shipping: 12.0, dispensing: 0.0 },
+  "ENC (ADD-ON) \u2013 ENCLOMIPHENE":    { cost_28d: 8.4,   cost_ship: 25.2,   shipping: 12.0, dispensing: 8.0 },
+  "GLP \u2013 SEMAGLUTIDE":              { cost_28d: 156.0, cost_ship: 468.0,  shipping: 0.0,  dispensing: 8.0 },
+  "GLP \u2013 TIRZEPATIDE":              { cost_28d: 375.0, cost_ship: 1125.0, shipping: 0.0,  dispensing: 8.0 },
+  "HCG x2":                               { cost_28d: null,  cost_ship: 456.0,  shipping: 12.0, dispensing: 0.0 },
+  "E3 Standard":                           { cost_28d: 13.75, cost_ship: 25.0,   shipping: 12.0, dispensing: 10.81 },
+  "E3 Advanced":                           { cost_28d: 22.27, cost_ship: 46.72,  shipping: 13.0, dispensing: 8.0 },
+};
+
+// Lab costs
+const LAB_COSTS = {
+  TRT_INITIAL: 43.98,
+  TRT_MONITORING: 34.98,
+  HRT_INITIAL: 38.38,
+  HRT_MONITORING: 34.38,
+};
+
+// Per-week clinical/operational rates (from Formula sheet formulas)
+const RATES = {
+  directMedical: 1.15,   // per week
+  labOrdering: 0.76,     // per week (× needsLabs)
+  medicalSupport: 0.28,  // per week
+  techPlatform: 0.98,    // per week
+  customerService: 0.83, // per week
+  adminFees: 0.71,       // per week
+  visitCost: 30.0,       // per visit (VV)
+};
+
+// Template presets: map template type to formula inputs
+const TEMPLATE_PRESETS = {
+  trt_enc_core: {
+    label: "TRT/ENC Core Membership",
+    type: "subscription",
+    meds: ["TRT \u2013 T CYPIONATE (10ML)"],
+    medLabels: ["T Cypionate (Pharmacy Price)", "Syringe / Gauze Kit"],
+    defaultPrice: 199, defaultWeeks: 4,
+    labType: "TRT",
+    needsLabs: true, needsVVs: true,
+  },
+  hrt_first90_no_labs: {
+    label: "HRT First 90 Days (No Labs)",
+    type: "subscription",
+    meds: ["HRT \u2013 FIRST 90 DAYS (TESTOSTERONE)", "HRT \u2013 FIRST 90 DAYS (PROGESTERONE)", "HRT \u2013 FIRST 90 DAYS (ESTRADIOL)"],
+    medLabels: null,
+    defaultPrice: 499, defaultWeeks: 12,
+    labType: "HRT",
+    needsLabs: true, needsVVs: true,
+    forceNoLabs: true,
+  },
+  hrt_core: {
+    label: "HRT Core Membership",
+    type: "subscription",
+    meds: ["HRT \u2013 FIRST 90 DAYS (TESTOSTERONE)", "HRT \u2013 FIRST 90 DAYS (PROGESTERONE)", "HRT \u2013 FIRST 90 DAYS (ESTRADIOL)"],
+    medLabels: null,
+    defaultPrice: 199, defaultWeeks: 4,
+    labType: "HRT",
+    needsLabs: true, needsVVs: true,
+  },
+  hrt_eval: {
+    label: "HRT Evaluation (Full)",
+    type: "evaluation",
+    meds: [],
+    medLabels: null,
+    defaultPrice: 35, defaultWeeks: null,
+    labType: "HRT",
+    needsLabs: true, needsVVs: true,
+    showPlaceholders: true,
+  },
+  hrt_eval_35_no_labs: {
+    label: "HRT Evaluation $35 (No Labs)",
+    type: "evaluation",
+    meds: [],
+    medLabels: null,
+    defaultPrice: 35, defaultWeeks: null,
+    labType: "HRT",
+    needsLabs: true, needsVVs: true,
+    forceNoLabs: true,
+  },
+  labcorp_fee: {
+    label: "LabCorp Fee (Itemized)",
+    type: "fee",
+    meds: [],
+    medLabels: null,
+    defaultPrice: 37, defaultWeeks: null,
+    labType: "TRT",
+    needsLabs: false, needsVVs: false,
+    fixedBreakdown: {
+      labs: { "LabCorp Fee": 33.85 },
+      clinical: {
+        "Direct Medical Services": 0.0,
+        "Lab Ordering & Review": 0.35,
+        "Medical Support Team": 0.28,
+      },
+      operational: {
+        "Technology Platform Fees": 0.98,
+        "24/7 Customer Service Team": 0.83,
+        "Administrative Fees": 0.71,
+      },
+    },
+  },
+};
+
+function round2(n) { return Math.round(n * 100) / 100; }
+function fmt(v) {
+  if (v == null) return "$0.00";
+  return "$" + Math.abs(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function getLabCostForType(labType) {
+  // Returns monitoring lab cost per the spreadsheet H26 logic
+  if (labType === "TRT_EXPANDED") return 98.54;
+  if (labType === "HRT_EXPANDED") return 98.94;
+  if (labType === "TRT") return 33.85;
+  if (labType === "HRT") return 26.35;
+  if (labType === "THYROID") return 2.50;
+  return 0;
+}
+
+// Expose lookup tables on window so external modules (e.g. med-selector.js)
+// can read and override them. `const` declarations do NOT create window
+// properties, so without this the TRT medication dropdown and Custom
+// Selection cost preview can't reach TEMPLATE_PRESETS / COGS.
+window.COGS = COGS;
+window.TEMPLATE_PRESETS = TEMPLATE_PRESETS;
+
+function getBreakdown(templateType, price, weeks, noLabs, noPharmacy, customMedications, noEstradiol) {
+  const preset = TEMPLATE_PRESETS[templateType];
+  if (!preset) return null;
+
+  // Fixed-breakdown templates (flat fee receipts) — see cost-engine.js.
+  if (preset.fixedBreakdown) {
+    const fb = preset.fixedBreakdown;
+    const sumObj = function (o) { return round2(Object.values(o).reduce(function (a, b) { return a + b; }, 0)); };
+    const labs = fb.labs ? Object.assign({}, fb.labs) : null;
+    const clinical = Object.assign({}, fb.clinical || {});
+    const operational = Object.assign({}, fb.operational || {});
+    const fixedTotal = price || preset.defaultPrice;
+    const labs_total = labs ? sumObj(labs) : null;
+    const clinical_total = sumObj(clinical);
+    const operational_total = sumObj(operational);
+    const remainder = round2(fixedTotal - round2((labs_total || 0) + clinical_total + operational_total));
+    return {
+      weeks: null, total: fixedTotal,
+      pharmacy: null, pharmacy_total: null,
+      labs: labs, labs_total: labs_total,
+      clinical: clinical, clinical_total: clinical_total,
+      operational: operational, operational_total: operational_total,
+      membership_fee: remainder > 0.005 ? remainder : null,
+      membership_fee_label: remainder > 0.005 ? "Service Fee" : null,
+    };
+  }
+
+  const totalPrice = price || preset.defaultPrice;
+  const termWeeks = weeks || preset.defaultWeeks || 1;
+  const isEval = preset.type === "evaluation";
+  const effectiveNoLabs = noLabs || preset.forceNoLabs || false;
+  // HRT medication composition modifier. The 7th arg accepts a string
+  // ('full' | 'tp' | 't' | 'p') or a legacy boolean (true === 'tp'). Any
+  // non-full composition on an HRT subscription bills only the selected med(s),
+  // zeroes the patient lab line, and keeps the lab-ordering review.
+  let _hrtComp = "full";
+  if (noEstradiol === true) _hrtComp = "tp";
+  else if (typeof noEstradiol === "string" && noEstradiol) _hrtComp = noEstradiol;
+  const applyNoEst = _hrtComp !== "full" && !isEval && preset.labType === "HRT";
+  const medsList = !applyNoEst ? preset.meds
+    : _hrtComp === "t" ? ["HRT – TESTOSTERONE"]
+    : _hrtComp === "p" ? ["HRT – PROGESTERONE"]
+    : ["HRT – TESTOSTERONE", "HRT – PROGESTERONE"];
+  const hasMeds = !noPharmacy && medsList.length > 0;
+
+  // Number of shipments: MAX(1, ROUNDDOWN(weeks/12, 0))
+  const numShipments = isEval ? 0 : Math.max(1, Math.floor(termWeeks / 12));
+  // Number of visits: >24 weeks = 2, else 1
+  const numVisits = termWeeks > 24 ? 2 : 1;
+  // Lab cost per the med type
+  const labCostPer = getLabCostForType(preset.labType);
+  // Lab ordering charge: if labCost > 35 then 5 else 0
+  const labOrderingCharge = labCostPer > 35 ? 5 : 0;
+  // Number of labs: 0 if noLabs, else (>24wk = 2, else 1)
+  const numLabs = effectiveNoLabs ? 0 : (termWeeks > 24 ? 2 : 1);
+
+  const result = { weeks: isEval ? null : termWeeks, total: totalPrice };
+
+  // === PHARMACY ===
+  if (hasMeds && !isEval) {
+    const pharmacy = {};
+    let pharmTotal = 0;
+    const meds = medsList;
+
+    meds.forEach((medKey, i) => {
+      const cogs = COGS[medKey];
+      if (!cogs) return;
+      // Spreadsheet formula: IF(weeks=4, cost_28d/3, cost_ship * numShipments)
+      // For 4-week terms, med 1 uses cost_28d/3; med 2+ use cost_ship/3
+      // (when cost_ship = cost_28d * 3, cost_ship/3 = cost_28d, so equivalent)
+      let medCost;
+      if (termWeeks === 4) {
+        if (i === 0 && cogs.cost_28d !== null) {
+          medCost = round2(cogs.cost_28d / 3);
+        } else {
+          medCost = round2(cogs.cost_ship / 3);
+        }
+      } else {
+        medCost = round2(cogs.cost_ship * numShipments);
+      }
+      
+      // Use custom label or default
+      let label;
+      if (customMedications && customMedications[i]) {
+        label = customMedications[i];
+      } else if (preset.medLabels && preset.medLabels[i]) {
+        label = preset.medLabels[i];
+      } else {
+        label = medKey.replace(/FIRST 90 DAYS \(([^)]+)\)/, function (_m, h) { return h.charAt(0).toUpperCase() + h.slice(1).toLowerCase(); }) + " (Inc. Supplies)";
+      }
+      pharmacy[label] = medCost;
+      pharmTotal += medCost;
+    });
+
+    // Use first med's shipping/dispensing rates (they share within a template)
+    const firstCogs = COGS[meds[0]];
+    const dispTotal = round2(firstCogs.dispensing * numShipments);
+    const shipTotal = round2(firstCogs.shipping * numShipments);
+    pharmacy["Dispensing Fee"] = dispTotal;
+    pharmacy["Shipping"] = shipTotal;
+    pharmTotal += dispTotal + shipTotal;
+
+    result.pharmacy = pharmacy;
+    result.pharmacy_total = round2(pharmTotal);
+  } else if (isEval) {
+    // Evaluations carry no pharmacy/medication line — nothing is dispensed at the
+    // evaluation stage, so the section is omitted entirely (not shown as $0).
+    result.pharmacy = null;
+    result.pharmacy_total = null;
+  } else if (noPharmacy && !isEval) {
+    result.pharmacy = {};
+    // Show zeroed-out med lines for management only
+    const meds = medsList;
+    meds.forEach((medKey, i) => {
+      let label = preset.medLabels && preset.medLabels[i] ? preset.medLabels[i] : medKey.replace(/FIRST 90 DAYS \(([^)]+)\)/, function (_m, h) { return h.charAt(0).toUpperCase() + h.slice(1).toLowerCase(); });
+      result.pharmacy[label] = 0;
+    });
+    result.pharmacy["Dispensing Fee"] = 0;
+    result.pharmacy["Shipping"] = 0;
+    result.pharmacy_total = 0;
+  } else {
+    result.pharmacy = null;
+    result.pharmacy_total = null;
+  }
+
+  // === LABS ===
+  const labsAmount = round2(labCostPer * numLabs);
+  if (applyNoEst) {
+    result.labs = { "Labs": 0 };
+    result.labs_total = 0;
+  } else if (isEval && preset.showPlaceholders && effectiveNoLabs) {
+    result.labs = { "Labs": 0 };
+    result.labs_total = 0;
+  } else if (isEval && preset.showPlaceholders) {
+    // Evaluations bill the INITIAL lab panel (e.g. HRT_INITIAL = 38.38), not the
+    // monitoring rate (getLabCostForType) used for ongoing subscription terms.
+    // Falls back to labsAmount if no initial panel is defined for this lab type.
+    let evalLabAmount = LAB_COSTS[preset.labType + "_INITIAL"];
+    if (typeof evalLabAmount !== "number") evalLabAmount = labsAmount;
+    evalLabAmount = round2(evalLabAmount);
+    result.labs = { "Labs": evalLabAmount };
+    result.labs_total = evalLabAmount;
+  } else if (numLabs > 0) {
+    result.labs = { "Monitoring Labs": labsAmount };
+    result.labs_total = labsAmount;
+  } else {
+    result.labs = effectiveNoLabs ? { "Monitoring Labs": 0 } : null;
+    result.labs_total = effectiveNoLabs ? 0 : null;
+  }
+
+  // === CLINICAL PROVIDER SERVICES ===
+  const effWeeks = isEval ? 1 : termWeeks;
+  const directMedical = round2((RATES.directMedical * effWeeks) + (numVisits * (preset.needsVVs ? 1 : 0) * RATES.visitCost));
+  const labOrdering = round2((RATES.labOrdering * effWeeks * (preset.needsLabs ? 1 : 0)) + (labOrderingCharge * 6));
+  const medicalSupport = round2((RATES.medicalSupport * effWeeks) + (labOrderingCharge * 2));
+
+  result.clinical = {
+    "Direct Medical Services": directMedical,
+    "Lab Ordering & Review": labOrdering,
+    "Medical Support Team": medicalSupport,
+  };
+  result.clinical_total = round2(directMedical + labOrdering + medicalSupport);
+
+  // === OPERATIONAL COSTS ===
+  const techPlatform = round2((RATES.techPlatform * effWeeks) + labOrderingCharge);
+  const customerService = round2((RATES.customerService * effWeeks) + (labOrderingCharge * 2));
+  const adminFees = round2((RATES.adminFees * effWeeks) + labOrderingCharge);
+
+  result.operational = {
+    "Technology Platform Fees": techPlatform,
+    "24/7 Customer Service Team": customerService,
+    "Administrative Fees": adminFees,
+  };
+  result.operational_total = round2(techPlatform + customerService + adminFees);
+
+  // === MEMBERSHIP / EVALUATION FEE ===
+  const sumSections = round2(
+    (result.pharmacy_total || 0) + 
+    (result.labs_total || 0) + 
+    result.clinical_total + 
+    result.operational_total
+  );
+  const remainder = round2(totalPrice - sumSections);
+
+  if (isEval) {
+    result.membership_fee = remainder;
+    // When the bundled cost basis exceeds the eval price the remainder is
+    // negative — a patient credit, shown as a "Discount" rather than a "Fee".
+    const evalNoun = preset.label.includes("HRT") ? "HRT Evaluation" : "Evaluation";
+    result.membership_fee_label = remainder < 0 ? (evalNoun + " Discount") : (evalNoun + " Fee");
+  } else if (remainder > 0) {
+    result.membership_fee = remainder;
+    result.membership_fee_label = templateType.startsWith("hrt") 
+      ? "HRT Core Membership Fee" 
+      : "Core Membership Fee";
+  } else {
+    result.membership_fee = null;
+    result.membership_fee_label = null;
+  }
+
+  return result;
+}
+
+
+// ============================================================
+// PDF GENERATION (using pdf-lib)
+// ============================================================
+
+async function generateReceipt() {
+  const btn = document.getElementById("generateBtn");
+  const status = document.getElementById("status");
+  btn.disabled = true;
+
+  // Validate form
+  if (!validateForm()) {
+    btn.disabled = false;
+    showToast("Please fix the highlighted fields");
+    return;
+  }
+
+  status.textContent = "Generating PDF...";
+
+  try {
+    const templateType = document.getElementById("template").value;
+    const priceVal = parseFloat(document.getElementById("price").value) || null;
+    const weeksVal = parseInt(document.getElementById("weeks").value) || null;
+    const noLabs = document.getElementById("noLabs").checked;
+    const noPharmacy = document.getElementById("noPharmacy").checked;
+    const hrtCompEl = document.getElementById("hrtComposition");
+    const noEstradiol = (hrtCompEl && hrtCompEl.value) || "full";
+    const medsStr = document.getElementById("medications").value.trim();
+    const medications = medsStr ? medsStr.split(",").map(s => s.trim()).filter(Boolean) : null;
+    const chargeDateVal = (document.getElementById("chargeDateInput") || { value: "" }).value;
+
+    const breakdown = getBreakdown(templateType, priceVal, weeksVal, noLabs, noPharmacy, medications, noEstradiol);
+
+    // Show preview
+    showPreview(breakdown, templateType);
+
+    // Build PDF
+    const pdfDoc = await PDFLib.PDFDocument.create();
+    // PDF metadata
+    if (window.FV && window.FV.setPdfMetadata) {
+      window.FV.setPdfMetadata(pdfDoc, {
+        title: "Itemized Invoice — Fountain Vitality",
+        subject: "Itemized Invoice (" + templateType + ")",
+        keywords: ["Fountain Vitality", "Itemized Invoice", templateType],
+      });
+    }
+    const page = pdfDoc.addPage([596, 842]);
+    const { width, height } = page.getSize();
+
+    // Fountain letterhead as page background
+    const bgBytes = Uint8Array.from(atob(BG_IMAGE_B64), c => c.charCodeAt(0));
+    const bgImage = await pdfDoc.embedPng(bgBytes);
+    page.drawImage(bgImage, { x: 0, y: 0, width, height });
+
+    // Load fonts
+    const helvetica = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+    const helveticaBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+    // Colors
+    const black = PDFLib.rgb(0, 0, 0);
+    const darkColor = PDFLib.rgb(0.102, 0.227, 0.29);
+    const tealColor = PDFLib.rgb(0.102, 0.478, 0.478);
+    const tealLine = PDFLib.rgb(0.251, 0.769, 0.690);
+    const lightGray = PDFLib.rgb(0.961, 0.961, 0.941);
+    const sectionBg = PDFLib.rgb(0.91, 0.91, 0.878);
+    const paidRed = PDFLib.rgb(0.8, 0, 0);
+    const grayLine = PDFLib.rgb(0.8, 0.8, 0.8);
+    const whiteColor = PDFLib.rgb(1, 1, 1);
+
+    // --- Clean footer ---
+    // The letterhead PNG bakes a large watercolor scene + contact info into the
+    // bottom of the page. Mask that band with white and draw a slim, professional
+    // footer (divider + compact contact line) so the receipt reads like an invoice.
+    // Drawn now (before content) so the body, which flows top-down, sits on top.
+    const footerGray = PDFLib.rgb(0.42, 0.42, 0.42);
+    page.drawRectangle({ x: 0, y: 0, width: width, height: 196, color: whiteColor });
+    page.drawLine({ start: { x: 72, y: 104 }, end: { x: width - 72, y: 104 }, thickness: 1, color: tealLine });
+    const fLine1 = "Fountain Vitality    ·    (213) 237-1454    ·    support@fountain.net";
+    const fLine2 = "2064 Park Street, Jacksonville, FL 32204";
+    const fW1 = helvetica.widthOfTextAtSize(fLine1, 8);
+    const fW2 = helvetica.widthOfTextAtSize(fLine2, 7.5);
+    page.drawText(fLine1, { x: (width - fW1) / 2, y: 84, size: 8, font: helvetica, color: darkColor });
+    page.drawText(fLine2, { x: (width - fW2) / 2, y: 70, size: 7.5, font: helvetica, color: footerGray });
+
+    // --- Patient Info Header ---
+    // 3 columns by default (Patient Name | Date of Birth | Charge Date). When the
+    // optional "Patient Address" toggle is on, a 4th Address column is added; its
+    // field uses auto font size (0) so Adobe shrinks long addresses to fit.
+    const headerY = height - 115;
+    const form = pdfDoc.getForm();
+    const addAddr = !!(document.getElementById("addAddress") && document.getElementById("addAddress").checked);
+
+    // Full-width header background bar
+    page.drawRectangle({ x: 72, y: headerY - 4, width: 452, height: 16, color: lightGray });
+
+    // Date column label follows the "Date of Service" toggle (field name stays charge_date).
+    const dateColLabel = (document.getElementById("dosToggle") && document.getElementById("dosToggle").checked) ? "Date of Service" : "Charge Date";
+
+    // Column spec: cellX/W, labelX, field X/W, field name, auto-size font?
+    const headerCols = addAddr ? [
+      { cx: 72,  cw: 140, lx: 115, label: "Patient Name",  fx: 74,  fw: 136, name: "patient_name",    auto: false },
+      { cx: 212, cw: 130, lx: 261, label: "Address",       fx: 214, fw: 126, name: "patient_address", auto: true  },
+      { cx: 342, cw: 92,  lx: 360, label: "Date of Birth", fx: 344, fw: 88,  name: "date_of_birth",   auto: false },
+      { cx: 434, cw: 90,  lx: 454, label: dateColLabel,    fx: 436, fw: 86,  name: "charge_date",     auto: false }
+    ] : [
+      { cx: 72,  cw: 180, lx: 120, label: "Patient Name",  fx: 74,  fw: 176, name: "patient_name",  auto: false },
+      { cx: 252, cw: 136, lx: 295, label: "Date of Birth", fx: 254, fw: 132, name: "date_of_birth", auto: false },
+      { cx: 388, cw: 136, lx: 430, label: dateColLabel,    fx: 390, fw: 132, name: "charge_date",   auto: false }
+    ];
+
+    headerCols.forEach(function (c) {
+      page.drawText(c.label, { x: c.lx, y: headerY, size: 8, font: helveticaBold, color: black });
+    });
+    headerCols.forEach(function (c) {
+      page.drawRectangle({ x: c.cx, y: headerY - 20, width: c.cw, height: 34, borderColor: grayLine, borderWidth: 0.5 });
+    });
+    // Fillable fields. Charge Date stays fillable so Adobe Sign's font matches the
+    // rest of the header. patient_address uses size 0 = auto-shrink to fit.
+    headerCols.forEach(function (c) {
+      const f = form.createTextField(c.name);
+      f.addToPage(page, { x: c.fx, y: headerY - 18, width: c.fw, height: 14, borderWidth: 0, borderColor: whiteColor });
+      try { f.setFontSize(c.auto ? 0 : 8); } catch (e) {}
+    });
+    // Re-draw cell borders AFTER fields so nothing clips them
+    headerCols.forEach(function (c) {
+      page.drawRectangle({ x: c.cx, y: headerY - 20, width: c.cw, height: 34, borderColor: grayLine, borderWidth: 0.5 });
+    });
+
+
+    // --- Subscription Coverage + Cycle rows (always fillable in Adobe Sign) ---
+    // Both rows render on every receipt with fillable form fields. Values are
+    // typed in Adobe Sign rather than auto-derived from the form, so the
+    // signer/approver has full control over what appears.
+    let ySub = headerY - 38;
+    let cycleAdded = false;
+    if (["hrt_core", "hrt_eval", "trt_enc_core", "hrt_first90_no_labs"].includes(templateType)) {
+      // Coverage row — fillable value
+      // Row is 18pt tall and the field is a shorter 12pt box centered inside it.
+      // This keeps Adobe Sign's "Auto" font sizing from ballooning the typed value
+      // and clipping its descenders against the bottom border (fixed 2026-06-10).
+      page.drawRectangle({ x: 72, y: ySub - 4, width: 452, height: 18, color: lightGray });
+      // Label cell narrowed to ~150 to fit "Subscription Coverage" so the value
+      // sits right after the label instead of floating two-thirds across the row.
+      page.drawRectangle({ x: 72, y: ySub - 4, width: 150, height: 18, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawRectangle({ x: 222, y: ySub - 4, width: 302, height: 18, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawText("Subscription Coverage", { x: 76, y: ySub + 2, size: 8, font: helveticaBold, color: black });
+      const scFieldName = templateType === "trt_enc_core" ? "subscription_coverage"
+        : (templateType === "hrt_first90_no_labs" ? "subscription_coverage" : "subscription_coverage_hrt");
+      const scField = form.createTextField(scFieldName);
+      scField.addToPage(page, { x: 224, y: ySub - 1, width: 298, height: 12, borderWidth: 0, borderColor: whiteColor });
+      try { scField.setFontSize(8); } catch (e) {}
+      page.drawRectangle({ x: 72, y: ySub - 4, width: 150, height: 18, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawRectangle({ x: 222, y: ySub - 4, width: 302, height: 18, borderColor: grayLine, borderWidth: 0.5 });
+
+      // Subscription Cycle row removed per request 2026-05-28 — Coverage row alone is enough.
+    }
+
+    // --- ITEMIZED INVOICE / SUPERBILL / STATUS: PAID ---
+    const yTitle = ySub - 24;
+    const _isSuperbill = window.FV && window.FV.docType === "superbill";
+    page.drawText(_isSuperbill ? "SUPERBILL" : "ITEMIZED INVOICE", { x: 72, y: yTitle, size: 16, font: helveticaBold, color: darkColor });
+    // Status label — read from "Invoice Status" dropdown. Defaults to PAID.
+    const statusSel = (document.getElementById("invoiceStatus") || { value: "paid" }).value;
+    const STATUS_LABELS = { paid: "STATUS: PAID", unpaid: "STATUS: UNPAID", past_due: "STATUS: PAST DUE", refunded: "STATUS: REFUNDED" };
+    const statusLabel = STATUS_LABELS[statusSel] || "STATUS: PAID";
+    // Color: PAID stays dark teal; UNPAID and PAST DUE are red; REFUNDED is muted gray.
+    const statusColor = (statusSel === "unpaid" || statusSel === "past_due") ? paidRed
+                       : (statusSel === "refunded") ? PDFLib.rgb(0.4, 0.4, 0.4)
+                       : darkColor;
+    page.drawText(statusLabel, { x: 380, y: yTitle, size: 16, font: helveticaBold, color: statusColor });
+
+    // Unique receipt ID for the patient's records / reimbursement tracking.
+    const _rNow = new Date();
+    const _rYmd = "" + _rNow.getFullYear() + String(_rNow.getMonth() + 1).padStart(2, "0") + String(_rNow.getDate()).padStart(2, "0");
+    const _rRand = Math.random().toString(36).slice(2, 6).toUpperCase();
+    const receiptId = "FV-" + _rYmd + "-" + _rRand;
+    page.drawText("Receipt #" + receiptId, { x: 72, y: yTitle - 14, size: 7.5, font: helvetica, color: PDFLib.rgb(0.42, 0.42, 0.42) });
+
+    // --- Cost Breakdown Table ---
+    let y = yTitle - 30;
+    const lineH = 16;
+    const xSection = 76;
+    const xItem = 120;
+    const xAmt = 480;
+
+    function drawSectionHeader(label, amount) {
+      page.drawRectangle({ x: 72, y: y - 3, width: 452, height: lineH, color: sectionBg });
+      page.drawLine({ start: { x: 72, y: y - 3 }, end: { x: 524, y: y - 3 }, thickness: 1.5, color: tealLine });
+      page.drawText(label, { x: xSection, y: y + 1, size: 9, font: helveticaBold, color: black });
+      const amtW = helveticaBold.widthOfTextAtSize(amount, 9);
+      page.drawText(amount, { x: xAmt - amtW, y: y + 1, size: 9, font: helveticaBold, color: black });
+      y -= lineH;
+    }
+
+    function drawLineItem(label, amount) {
+      page.drawText(label, { x: xItem, y: y + 1, size: 8, font: helvetica, color: black });
+      // Dotted leader
+      const labelEnd = xItem + helvetica.widthOfTextAtSize(label, 8) + 5;
+      for (let dx = labelEnd; dx < xAmt - 40; dx += 4) {
+        page.drawRectangle({ x: dx, y: y + 4, width: 1, height: 0.5, color: grayLine });
+      }
+      const amtW = helvetica.widthOfTextAtSize(amount, 8);
+      page.drawText(amount, { x: xAmt - amtW, y: y + 1, size: 8, font: helvetica, color: black });
+      y -= lineH;
+    }
+
+    // PHARMACY — skip the section entirely if it totals $0, and hide any $0 line items.
+    if (breakdown.pharmacy && breakdown.pharmacy_total > 0) {
+      drawSectionHeader("Pharmacy Costs", fmt(breakdown.pharmacy_total));
+      for (const [k, v] of Object.entries(breakdown.pharmacy)) { if (v === 0) continue; drawLineItem(k, fmt(v)); }
+    }
+
+    // LABS — skip the section entirely if it totals $0, and hide any $0 line items.
+    if (breakdown.labs && breakdown.labs_total > 0) {
+      drawSectionHeader("Lab Costs", fmt(breakdown.labs_total));
+      for (const [k, v] of Object.entries(breakdown.labs)) { if (v === 0) continue; drawLineItem(k, fmt(v)); }
+    }
+
+    // CLINICAL
+    drawSectionHeader("Clinical Provider Services (Duval Medical P.A)", fmt(breakdown.clinical_total));
+    for (const [k, v] of Object.entries(breakdown.clinical)) drawLineItem(k, fmt(v));
+
+    // OPERATIONAL
+    drawSectionHeader("Operational Costs", fmt(breakdown.operational_total));
+    for (const [k, v] of Object.entries(breakdown.operational)) drawLineItem(k, fmt(v));
+
+    // MEMBERSHIP FEE
+    if (breakdown.membership_fee !== null) {
+      const feeLabel = breakdown.membership_fee_label || "Core Membership Fee";
+      drawSectionHeader(feeLabel, fmt(breakdown.membership_fee));
+      // Descriptor so the patient/administrator understands the largest line.
+      const feeDesc = feeLabel.indexOf("Evaluation") >= 0
+        ? "Comprehensive provider evaluation, clinical review, and care plan."
+        : "Ongoing provider access, care coordination, and platform & member support.";
+      page.drawText(feeDesc, { x: xItem, y: y + 3, size: 7, font: helvetica, color: PDFLib.rgb(0.42, 0.42, 0.42) });
+      y -= 11;
+    }
+
+    // OTHER CHARGES (fillable CPT / custom lines) — 2-cell bordered row structure
+    const cpt = window.FV && window.FV.cptLines;
+    if (cpt && cpt.enabled && cpt.count > 0) {
+      drawSectionHeader("Other", "—");
+      // Column widths mirror Subscription Coverage / Provider Footer
+      const otherDescCellX = 72;
+      const otherDescCellW = 360;
+      const otherAmtCellX = 432;
+      const otherAmtCellW = 92;
+      for (let i = 0; i < cpt.count; i++) {
+        // Row container (lightGray background + 2 cell borders)
+        page.drawRectangle({ x: otherDescCellX, y: y - 2, width: otherDescCellW + otherAmtCellW, height: 16, color: lightGray });
+        page.drawRectangle({ x: otherDescCellX, y: y - 2, width: otherDescCellW, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+        page.drawRectangle({ x: otherAmtCellX, y: y - 2, width: otherAmtCellW, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+        // Fillable description (inside left cell, 2px padding each side)
+        const descField = form.createTextField("other_desc_" + i);
+        descField.addToPage(page, { x: otherDescCellX + 2, y: y - 2, width: otherDescCellW - 4, height: 14, borderWidth: 0, borderColor: whiteColor });
+        try { descField.setFontSize(8); } catch (e) {}
+        // Fillable amount (inside right cell)
+        const amtField = form.createTextField("other_amt_" + i);
+        amtField.addToPage(page, { x: otherAmtCellX + 2, y: y - 2, width: otherAmtCellW - 4, height: 14, borderWidth: 0, borderColor: whiteColor });
+        try { amtField.setFontSize(8); } catch (e) {}
+        // Re-draw cell borders AFTER fields
+        page.drawRectangle({ x: otherDescCellX, y: y - 2, width: otherDescCellW, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+        page.drawRectangle({ x: otherAmtCellX, y: y - 2, width: otherAmtCellW, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+        y -= 18;
+      }
+    }
+
+    // TOTAL
+    const totalLabel = breakdown.weeks ? `Total cost per ${breakdown.weeks} weeks` : "Total cost";
+    y -= 4;
+    page.drawRectangle({ x: 72, y: y - 3, width: 452, height: lineH + 2, color: sectionBg });
+    page.drawLine({ start: { x: 72, y: y - 3 }, end: { x: 524, y: y - 3 }, thickness: 2, color: tealLine });
+    page.drawText(totalLabel, { x: xSection, y: y + 1, size: 10, font: helveticaBold, color: black });
+    const totalAmtStr = fmt(breakdown.total);
+    const totalAmtW = helveticaBold.widthOfTextAtSize(totalAmtStr, 10);
+    page.drawText(totalAmtStr, { x: xAmt - totalAmtW, y: y + 1, size: 10, font: helveticaBold, color: black });
+    y -= 24;
+
+    // --- Provider Footer (2-cell structure, mirrors Subscription Coverage row) ---
+    // Assessments/evaluations omit the Rendering Provider row by default; the
+    // "Rendering Provider" toggle (assessments only) adds it back. Non-assessment
+    // templates always render it.
+    const isAssessment = !!(window.TEMPLATE_PRESETS && window.TEMPLATE_PRESETS[templateType] && window.TEMPLATE_PRESETS[templateType].type === "evaluation");
+    const addRenderingProvider = !!(document.getElementById("addRenderingProvider") && document.getElementById("addRenderingProvider").checked);
+    if (!isAssessment || addRenderingProvider) {
+      page.drawRectangle({ x: 72, y: y - 2, width: 452, height: 16, color: lightGray });
+      page.drawRectangle({ x: 72, y: y - 2, width: 200, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawRectangle({ x: 272, y: y - 2, width: 252, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+
+      page.drawText("Rendering Provider's Professional Name", { x: 76, y: y + 2, size: 8, font: helveticaBold, color: black });
+      const rpField = form.createTextField("rendering_provider");
+      rpField.addToPage(page, { x: 274, y: y - 2, width: 248, height: 14, borderWidth: 0, borderColor: whiteColor });
+      try { rpField.setFontSize(8); } catch (e) {}
+      // Re-draw cell borders AFTER field
+      page.drawRectangle({ x: 72, y: y - 2, width: 200, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawRectangle({ x: 272, y: y - 2, width: 252, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      y -= 18;
+    }
+
+    // --- NPI Number (optional, mirrors Rendering Provider row) ---
+    const addNPI = document.getElementById("addNPI") && document.getElementById("addNPI").checked;
+    if (addNPI) {
+      page.drawRectangle({ x: 72, y: y - 2, width: 452, height: 16, color: lightGray });
+      page.drawRectangle({ x: 72, y: y - 2, width: 200, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawRectangle({ x: 272, y: y - 2, width: 252, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawText("NPI Number", { x: 76, y: y + 2, size: 8, font: helveticaBold, color: black });
+      const npiField = form.createTextField("npi_number");
+      npiField.addToPage(page, { x: 274, y: y - 2, width: 248, height: 14, borderWidth: 0, borderColor: whiteColor });
+      try { npiField.setFontSize(8); } catch (e) {}
+      // Re-draw cell borders AFTER field
+      page.drawRectangle({ x: 72, y: y - 2, width: 200, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawRectangle({ x: 272, y: y - 2, width: 252, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      y -= 18;
+    }
+
+    // --- Place of Service (always present, baked text) ---
+    page.drawRectangle({ x: 72, y: y - 2, width: 452, height: 16, color: lightGray });
+    page.drawRectangle({ x: 72, y: y - 2, width: 200, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+    page.drawRectangle({ x: 272, y: y - 2, width: 252, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+    page.drawText("Place of Service", { x: 76, y: y + 2, size: 8, font: helveticaBold, color: black });
+    page.drawText("Telehealth provided in patient's home", { x: 276, y: y + 2, size: 8, font: helvetica, color: black });
+    y -= 18;
+
+    // Diagnosis / EIN (optional — only if checkbox checked)
+    const addDiag = document.getElementById("addDiagnosis") && document.getElementById("addDiagnosis").checked;
+    if (addDiag) {
+      // Auto-resolve ICD-10 from template
+      const dxDefault = (window.FV && window.FV.getDefaultICD10) ? window.FV.getDefaultICD10(templateType) : { code: "", label: "" };
+      const dxCode = dxDefault.code || "";
+      page.drawRectangle({ x: 72, y: y - 2, width: 452, height: 16, color: lightGray, borderColor: grayLine, borderWidth: 0.5 });
+      page.drawText("Diagnosis Code", { x: 76, y: y + 2, size: 8, font: helveticaBold, color: black });
+      if (dxCode) {
+        page.drawText(dxCode, { x: 172, y: y + 2, size: 8, font: helvetica, color: black });
+      } else {
+        const dcField = form.createTextField("diagnosis_code");
+        dcField.addToPage(page, { x: 170, y: y - 2, width: 100, height: 14, borderWidth: 0, borderColor: whiteColor });
+        try { dcField.setFontSize(8); } catch (e) {}
+      }
+      page.drawText("EIN Number", { x: 300, y: y + 2, size: 8, font: helveticaBold, color: black });
+      const ein = "85-3931138";
+      page.drawText(ein, { x: 400, y: y + 2, size: 8, font: helvetica, color: black });
+      // Re-draw row border after field
+      page.drawRectangle({ x: 72, y: y - 2, width: 452, height: 16, borderColor: grayLine, borderWidth: 0.5 });
+      y -= 18;
+    }
+
+    // PAID stamp removed — STATUS: PAID at top of receipt is the canonical indicator
+
+// Force all fillable form fields to use embedded Helvetica so Adobe's
+    // fill-in text matches the drawn text on the PDF (instead of Adobe's auto font/size).
+    try { form.updateFieldAppearances(helvetica); } catch (e) { /* older pdf-lib */ }
+
+    // Expose the y position where the receipt body ended, so detail-lines-pdf.js
+    // can render Detail Lines inline on page 1 if there's room.
+    window.__receiptEndY = y;
+
+    // Serialize and download
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const tmpl = templateType.replace(/_/g, "-");
+    const p = priceVal || "default";
+    const w = weeksVal || breakdown.weeks || "";
+    // Show in preview iframe
+    const previewContainer = document.getElementById("pdfPreviewContainer");
+    const previewFrame = document.getElementById("pdfPreviewFrame");
+    previewContainer.classList.add("show");
+    previewFrame.src = url;
+    
+    // Store for download button
+    window._lastPdfUrl = url;
+    const filenameDate = chargeDateVal || (window.FV && window.FV.todayISO ? window.FV.todayISO() : "");
+    const _sbMode = window.FV && window.FV.docType === "superbill";
+    window._lastPdfName = (window.FV && window.FV.buildFilename)
+      ? window.FV.buildFilename({ template: templateType, date: filenameDate, kind: _sbMode ? "superbill" : "single" })
+      : (_sbMode ? "Superbill.pdf" : "Itemized Receipt.pdf");
+
+    // Show success toast
+    showToast(_sbMode ? "Superbill generated — preview below!" : "PDF generated — preview below!");
+    status.textContent = "";
+
+  } catch (err) {
+    status.textContent = "Error: " + err.message;
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showPreview(breakdown, templateType) {
+  const box = document.getElementById("preview");
+  box.style.display = "block";
+  let html = "<h3>Cost Breakdown Preview</h3>";
+
+  function addSection(label, total, items) {
+    html += `<div class="line section"><span>${label}</span><span>${fmt(total)}</span></div>`;
+    if (items) {
+      for (const [k, v] of Object.entries(items)) {
+        html += `<div class="line"><span class="indent">${k}</span><span>${fmt(v)}</span></div>`;
+      }
+    }
+  }
+
+  if (breakdown.pharmacy) addSection("Pharmacy Costs", breakdown.pharmacy_total, breakdown.pharmacy);
+  if (breakdown.labs) addSection("Lab Costs", breakdown.labs_total, breakdown.labs);
+  addSection("Clinical Provider Services", breakdown.clinical_total, breakdown.clinical);
+  addSection("Operational Costs", breakdown.operational_total, breakdown.operational);
+  if (breakdown.membership_fee !== null) {
+    html += `<div class="line section"><span>${breakdown.membership_fee_label}</span><span>${fmt(breakdown.membership_fee)}</span></div>`;
+  }
+  const totalLabel = breakdown.weeks ? `Total per ${breakdown.weeks} weeks` : "Total";
+  html += `<div class="line total"><span>${totalLabel}</span><span>${fmt(breakdown.total)}</span></div>`;
+  box.innerHTML = html;
+}
+
+// Auto-fill defaults when template changes
+document.getElementById("template").addEventListener("change", function() {
+  updateTemplateInfo();
+  const t = this.value;
+  const priceEl = document.getElementById("price");
+  const weeksEl = document.getElementById("weeks");
+  const noLabsEl = document.getElementById("noLabs");
+  const noPharmEl = document.getElementById("noPharmacy");
+
+  if (t === "trt_enc_core") { priceEl.value = "199"; weeksEl.value = "4"; }
+  else if (t === "hrt_first90_no_labs") { priceEl.value = "499"; weeksEl.value = "12"; }
+  else if (t === "hrt_core") { priceEl.value = "199"; weeksEl.value = "4"; }
+  else if (t === "hrt_eval") { priceEl.value = "35"; weeksEl.value = ""; }
+  else if (t === "hrt_eval_35_no_labs") { priceEl.value = "35"; weeksEl.value = ""; }
+  else if (t === "labcorp_fee") { priceEl.value = "37"; weeksEl.value = ""; }
+
+  // HRT Core defaults to No Labs on (labs-excluded states are the common case).
+  if (t === "hrt_core" && noLabsEl) noLabsEl.checked = true;
+
+  syncDiagnosisDefault(t);
+  syncRenderingProviderToggle(t);
+  syncNoEstradiolToggle(t);
+});
+
+// ===== RENDERING PROVIDER TOGGLE (assessments only) =====
+// The Rendering Provider footer row is omitted from assessment/evaluation
+// receipts by default. The toggle is only shown for assessment templates so
+// operators can add the row back when needed; it resets to off on switch.
+function syncRenderingProviderToggle(templateType) {
+  var label = document.getElementById("addRenderingProviderLabel");
+  var box = document.getElementById("addRenderingProvider");
+  if (!label || !box) return;
+  var isAssessment = !!(window.TEMPLATE_PRESETS && window.TEMPLATE_PRESETS[templateType] && window.TEMPLATE_PRESETS[templateType].type === "evaluation");
+  label.style.display = isAssessment ? "" : "none";
+  if (!isAssessment) box.checked = false;
+}
+
+// ===== NO-ESTRADIOL TOGGLE (HRT subscription plans only) =====
+// Shown only for HRT subscription templates (not TRT, not evaluations). When
+// checked, the receipt bills testosterone + progesterone only. Resets on switch.
+function syncNoEstradiolToggle(templateType) {
+  var row = document.getElementById("hrtCompositionRow");
+  var help = document.getElementById("hrtCompositionHelp");
+  var sel = document.getElementById("hrtComposition");
+  if (!row || !sel) return;
+  var preset = window.TEMPLATE_PRESETS && window.TEMPLATE_PRESETS[templateType];
+  var isHrtSub = !!(preset && preset.labType === "HRT" && preset.type === "subscription");
+  row.style.display = isHrtSub ? "" : "none";
+  if (help) help.style.display = isHrtSub ? "" : "none";
+  if (!isHrtSub) sel.value = "full";
+}
+
+// ===== DIAGNOSIS CODE DEFAULT =====
+// TRT/HRT templates carry a mapped ICD-10 (see fv-shared.js), so the Diagnosis
+// Code row is ON by default — no manual toggle needed. Auto-checks whenever the
+// selected template has a default code; auto-unchecks for any future template
+// that has no mapped ICD-10. Operators can still override manually.
+function syncDiagnosisDefault(templateType) {
+  var box = document.getElementById("addDiagnosis");
+  if (!box) return;
+  var hasCode = !!(window.FV && window.FV.getDefaultICD10 &&
+    (window.FV.getDefaultICD10(templateType) || {}).code);
+  box.checked = hasCode;
+}
+document.addEventListener("DOMContentLoaded", function () {
+  var sel = document.getElementById("template");
+  syncDiagnosisDefault(sel ? sel.value : "");
+  syncRenderingProviderToggle(sel ? sel.value : "");
+  syncNoEstradiolToggle(sel ? sel.value : "");
+});
+
+// Patient State dropdown removed — set "No Labs" manually when needed.
+
+// ===== DATE OF SERVICE TOGGLE =====
+// Swaps the visible field label between "Charge Date" and "Date of Service".
+// The PDF header label is read from this same checkbox at generation time.
+(function () {
+  var dosToggle = document.getElementById("dosToggle");
+  var labelText = document.getElementById("chargeDateLabelText");
+  if (!dosToggle || !labelText) return;
+  // Restore saved preference
+  if (localStorage.getItem("fv_dos") === "1") dosToggle.checked = true;
+  function syncDosLabel() {
+    labelText.textContent = dosToggle.checked ? "Date of Service" : "Charge Date";
+    localStorage.setItem("fv_dos", dosToggle.checked ? "1" : "0");
+  }
+  dosToggle.addEventListener("change", syncDosLabel);
+  syncDosLabel();
+})();
+
+// ===== DOWNLOAD FROM PREVIEW =====
+function downloadFromPreview() {
+  if (!window._lastPdfUrl) return;
+  const a = document.createElement("a");
+  a.href = window._lastPdfUrl;
+  a.download = window._lastPdfName || "receipt.pdf";
+  a.click();
+  showToast("PDF downloaded!");
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  const toastMsg = document.getElementById("toastMsg");
+  toastMsg.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => { toast.classList.remove("show"); }, 3500);
+}
+
+// ===== DARK MODE =====
+function toggleDark() {
+  document.body.classList.toggle("dark-mode");
+  const isDark = document.body.classList.contains("dark-mode");
+  document.getElementById("darkToggle").innerHTML = isDark ? "&#9728;" : "&#127769;";
+  localStorage.setItem("fv_dark", isDark ? "1" : "0");
+}
+// Restore dark mode preference
+if (localStorage.getItem("fv_dark") === "1") {
+  document.body.classList.add("dark-mode");
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("darkToggle").innerHTML = "&#9728;";
+  });
+}
+
+
+// ===== TEMPLATE DESCRIPTIONS =====
+const TEMPLATE_INFO = {
+  trt_enc_core: {
+    label: "TRT/ENC Core Membership",
+    includes: ["Testosterone Cypionate", "Dispensing & shipping", "Monitoring labs", "Provider visits", "Telehealth platform", "Care coordination"],
+    defaults: "Default: $199 / 4 weeks"
+  },
+  hrt_first90_no_labs: {
+    label: "HRT First 90 Days (No Labs)",
+    includes: ["Estradiol + Progesterone", "Dispensing & shipping", "3 provider consultations", "Care coordination", "Membership fee"],
+    defaults: "Default: $499 / 12 weeks — labs excluded (NY/NJ/MD)"
+  },
+  hrt_core: {
+    label: "HRT Core Membership",
+    includes: ["Estradiol + Progesterone", "Dispensing & shipping", "Ongoing provider visits", "Care coordination", "Membership fee"],
+    defaults: "Default: $199 / 4 weeks — No Labs on by default"
+  },
+  hrt_eval: {
+    label: "HRT Evaluation (Full)",
+    includes: ["Initial evaluation visit", "Lab ordering & review", "Pharmacy placeholders", "Lab placeholders", "Care coordination"],
+    defaults: "Default: $35 — includes all line items at $0 placeholders"
+  },
+  hrt_eval_35_no_labs: {
+    label: "HRT Evaluation $35 (No Labs)",
+    includes: ["Initial evaluation visit", "Direct medical services", "Care coordination", "Evaluation fee"],
+    defaults: "Default: $35 — no pharmacy or lab lines"
+  },
+  labcorp_fee: {
+    label: "LabCorp Fee (Itemized)",
+    includes: ["LabCorp lab fee", "Lab ordering & review", "Medical support team", "Platform & operational fees"],
+    defaults: "Default: $37 — flat itemized lab-draw receipt"
+  }
+};
+
+function updateTemplateInfo() {
+  const tmpl = document.getElementById("template").value;
+  const info = TEMPLATE_INFO[tmpl];
+  const box = document.getElementById("templateInfo");
+  if (!box || !info) return;
+  box.innerHTML = '<strong>' + info.label + '</strong><div class="info-items">' +
+    info.includes.map(function(i){ return '<span class="info-item">' + i + '</span>'; }).join('') +
+    '</div><div class="defaults">' + info.defaults + '</div>';
+}
+document.addEventListener("DOMContentLoaded", updateTemplateInfo);
+var __tmplSel = document.getElementById("template");
+if (__tmplSel) __tmplSel.addEventListener("change", updateTemplateInfo);
+
+const TEMPLATE_NEEDS_WEEKS = { trt_enc_core: true, hrt_first90_no_labs: true, hrt_core: true };
+
+function validateForm() {
+  let valid = true;
+  const tmpl = document.getElementById("template").value;
+  const priceField = document.getElementById("price").closest(".field");
+  const weeksField = document.getElementById("weeks").closest(".field");
+  const priceVal = document.getElementById("price").value.trim();
+  const weeksVal = document.getElementById("weeks").value.trim();
+  if (!priceVal) {
+    valid = false;
+    if (priceField) priceField.classList.add("has-error");
+  } else if (priceField) {
+    priceField.classList.remove("has-error");
+  }
+  if (TEMPLATE_NEEDS_WEEKS[tmpl] && !weeksVal) {
+    valid = false;
+    if (weeksField) weeksField.classList.add("has-error");
+  } else if (weeksField) {
+    weeksField.classList.remove("has-error");
+  }
+  return valid;
+}
+</script>
+<!-- Authoritative cost engine. Unit-tested (cost-engine.test.mjs) and loaded
+     LAST so it overrides the legacy inline copy above. Edit prices here. -->
+<script src="./cost-engine.js"></script>
+</body>
+</html>
