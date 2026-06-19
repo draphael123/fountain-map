@@ -9,6 +9,42 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+/* Resilient PDFLib loader — guarantees window.PDFLib is available before any
+   PDF generation, even if the primary CDN (cdnjs) is blocked/unreachable or the
+   service worker served a stale or broken cached copy. Falls back across mirrors.
+   Call `await window.ensurePDFLib()` at the start of every generation path. */
+(function () {
+  var FALLBACKS = [
+    "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js",
+    "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"
+  ];
+  var pending = null;
+  function ok() { return !!(window.PDFLib && window.PDFLib.PDFDocument); }
+  function loadScript(url) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = url;
+      s.async = true;
+      s.onload = function () { ok() ? resolve() : reject(new Error("loaded but PDFLib missing: " + url)); };
+      s.onerror = function () { reject(new Error("failed to load " + url)); };
+      document.head.appendChild(s);
+    });
+  }
+  window.ensurePDFLib = function () {
+    if (ok()) return Promise.resolve(window.PDFLib);
+    if (pending) return pending;
+    pending = FALLBACKS.reduce(function (chain, url) {
+      return chain.catch(function () { return loadScript(url); });
+    }, Promise.reject(new Error("primary CDN unavailable"))).then(function () {
+      if (!ok()) throw new Error("PDFLib could not be loaded from any source");
+      return window.PDFLib;
+    });
+    pending.catch(function () { pending = null; }); // allow a later retry
+    return pending;
+  };
+})();
+</script>
 <style>
   :root {
     --fountain-navy: #181C39;
@@ -1155,6 +1191,9 @@ async function generateReceipt() {
 
     // Show preview
     showPreview(breakdown, templateType);
+
+    // Ensure the PDF library is loaded (self-heals if the CDN copy failed)
+    if (window.ensurePDFLib) await window.ensurePDFLib();
 
     // Build PDF
     const pdfDoc = await PDFLib.PDFDocument.create();

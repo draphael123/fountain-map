@@ -1,11 +1,11 @@
 // service-worker.js — Fountain Vitality Itemized Receipt Generator
 // Caches the app shell + pdf-lib + Libre Franklin so the tool works offline
 // after the first successful load.
-const CACHE_VERSION = "fv-receipt-v67-2026-06-13";
+const CACHE_VERSION = "fv-receipt-v68-2026-06-18";
 const CACHE_NAME = CACHE_VERSION;
 // One-sentence summary of the most recent change — shown in the page header.
 // Update this string alongside CACHE_VERSION on every deploy.
-const LAST_CHANGE = "Added Superbill mode — a Document Type toggle at the top of the form switches between Itemized Receipt and Superbill, automatically enabling NPI and relabeling the PDF header and filename.";
+const LAST_CHANGE = "Fixed \"PDFLib is not defined\" error — PDF generation now self-heals by loading pdf-lib from a fallback CDN if the primary copy fails, and the service worker no longer caches broken CDN responses.";
 
 const APP_SHELL = [
   "./",
@@ -59,6 +59,10 @@ self.addEventListener("fetch", (event) => {
   const sameOrigin = url.origin === self.location.origin;
   const isCdn = CDN_HOSTS.some((h) => url.hostname.endsWith(h));
   if (url.hostname === "api.github.com") return;
+  // Never let the SW serve a cached copy of pdf-lib — a broken/opaque response
+  // cached once would persist and break PDF generation ("PDFLib is not defined").
+  // Always go to network; the in-page ensurePDFLib() handles any CDN failure.
+  if (url.pathname.indexOf("pdf-lib") !== -1) return;
 
   if (sameOrigin) {
     event.respondWith((async () => {
